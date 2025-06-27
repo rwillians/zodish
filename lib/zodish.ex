@@ -6,6 +6,7 @@ defmodule Zodish do
 
   alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.Atom, as: TAtom
+  alias Zodish.Type.Boolean, as: TBoolean
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -85,6 +86,45 @@ defmodule Zodish do
         when option: {:coerce, boolean() | :unsafe}
 
   defdelegate atom(opts \\ []), to: TAtom, as: :new
+
+  @doc ~S"""
+  Defines a boolean type.
+
+      iex> Z.boolean()
+      iex> |> Z.parse(true)
+      {:ok, true}
+
+  ## Options
+
+  You can use `:coerce` to cast the given value into a boolean.
+
+      iex> Z.boolean(coerce: true)
+      iex> |> Z.parse("true")
+      {:ok, true}
+
+  The accepted boolean-like values are:
+
+  | value        | coerced to |
+  | :----------- | :--------- |
+  | `"true"`     | `true`     |
+  | `"1"`        | `true`     |
+  | `1`          | `true`     |
+  | `"yes"`      | `true`     |
+  | `"y"`        | `true`     |
+  | `"on"`       | `true`     |
+  | `"enabled"`  | `true`     |
+  | `"false"`    | `false`    |
+  | `"0"`        | `false`    |
+  | `0`          | `false`    |
+  | `"no"`       | `false`    |
+  | `"n"`        | `false`    |
+  | `"off"`      | `false`    |
+  | `"disabled"` | `false`    |
+  """
+  @spec boolean(opts :: [option]) :: TBoolean.t()
+        when option: {:coerce, boolean()}
+
+  defdelegate boolean(opts \\ []), to: TBoolean, as: :new
 
   @doc ~S"""
   Defines a string type.
