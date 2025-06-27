@@ -4,6 +4,7 @@ defmodule Zodish do
   JavaScript's Zod.
   """
 
+  alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -15,6 +16,33 @@ defmodule Zodish do
 
   """
   defdelegate parse(type, value), to: Zodish.Parseable
+
+  #
+  #   CORE TYPES
+  #   Keep them sorted alphabetically!
+  #
+
+  @doc ~S"""
+  Defines a type that accepts any value.
+
+      iex> Z.any()
+      iex> |> Z.parse("string")
+      {:ok, "string"}
+
+      iex> Z.any()
+      iex> |> Z.parse(123)
+      {:ok, 123}
+
+      iex> Z.any()
+      iex> |> Z.parse(%{key: "value"})
+      {:ok, %{key: "value"}}
+
+      iex> Z.any()
+      iex> |> Z.parse({:foo, :bar})
+      {:ok, {:foo, :bar}}
+
+  """
+  defdelegate any(), to: TAny, as: :new
 
   @doc ~S"""
   Defines a new string type.
