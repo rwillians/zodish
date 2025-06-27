@@ -5,6 +5,7 @@ defmodule Zodish do
   """
 
   alias Zodish.Type.Any, as: TAny
+  alias Zodish.Type.Atom, as: TAtom
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -45,7 +46,42 @@ defmodule Zodish do
   defdelegate any(), to: TAny, as: :new
 
   @doc ~S"""
-  Defines a new string type.
+  Defines an atom type.
+
+      iex> Z.atom()
+      iex> |> Z.parse(:foo)
+      {:ok, :foo}
+
+  ## Options
+
+  You can use `:coerce` to cast the given string into an atom.
+
+      iex> Z.atom(coerce: true)
+      iex> |> Z.parse("foo")
+      {:ok, :foo}
+
+  By default, `:coerce` will only cast strings for existing atoms
+  since BEAM has a limited number of atom.
+
+      iex> Z.atom(coerce: true)
+      iex> |> Z.parse("alksdhfwejh")
+      {:error, %Zodish.Issue{message: "Cannot coerce string \"alksdhfwejh\" into an existing atom"}}
+
+  If you want to allow unsafe coercion of any string into an atom, you
+  can set `:coerce` to `:unsafe`.
+
+      iex> Z.atom(coerce: :unsafe)
+      iex> |> Z.parse("lskdjfalsdjf")
+      {:ok, :lskdjfalsdjf}
+
+  """
+  @spec atom(opts :: [option]) :: TAtom.t()
+        when option: {:coerce, boolean() | :unsafe}
+
+  defdelegate atom(opts \\ []), to: TAtom, as: :new
+
+  @doc ~S"""
+  Defines a string type.
 
       iex> Z.string()
       iex> |> Z.parse("Hello, World!")
