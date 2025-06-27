@@ -11,6 +11,7 @@ defmodule Zodish do
   alias Zodish.Type.DateTime, as: TDateTime
   alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.Integer, as: TInteger
+  alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -285,6 +286,64 @@ defmodule Zodish do
                | {:lte, Zodish.Option.t(integer())}
 
   defdelegate integer(opts \\ []), to: TInteger, as: :new
+
+  @doc ~S"""
+  Defines a number type.
+
+      iex> Z.number()
+      iex> |> Z.parse(3)
+      {:ok, 3}
+
+      iex> Z.number()
+      iex> |> Z.parse(3.14)
+      {:ok, 3.14}
+
+  ## Options
+
+  You can use `:gt`, `:gte`, `:lt` and `:lte` to constrain the allowed
+  values.
+
+      iex> Z.number(gt: 0)
+      iex> |> Z.parse(0)
+      {:error, %Zodish.Issue{message: "Expected a number greater than 0, got 0"}}
+
+      iex> Z.number(gte: 0)
+      iex> |> Z.parse(-1)
+      {:error, %Zodish.Issue{message: "Expected a number greater than or equal to 0, got -1"}}
+
+      iex> Z.number(lt: 1)
+      iex> |> Z.parse(2)
+      {:error, %Zodish.Issue{message: "Expected a number less than 1, got 2"}}
+
+      iex> Z.number(lte: 1)
+      iex> |> Z.parse(2)
+      {:error, %Zodish.Issue{message: "Expected a number less than or equal to 1, got 2"}}
+
+  You can use `:coerce` to cast the given value into a number before
+  validation.
+
+      iex> Z.number(coerce: true)
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
+      iex> Z.number(coerce: true)
+      iex> |> Z.parse("123.678")
+      {:ok, 123.678}
+
+  """
+  @spec number(opts :: [option]) :: TInteger.t()
+        when option:
+               {:coerce, boolean()}
+               | {:gt, number()}
+               | {:gt, Zodish.Option.t(number())}
+               | {:gte, number()}
+               | {:gte, Zodish.Option.t(number())}
+               | {:lt, number()}
+               | {:lt, Zodish.Option.t(number())}
+               | {:lte, number()}
+               | {:lte, Zodish.Option.t(number())}
+
+  defdelegate number(opts \\ []), to: TNumber, as: :new
 
   @doc ~S"""
   Defines a string type.
