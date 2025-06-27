@@ -10,6 +10,7 @@ defmodule Zodish do
   alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
   alias Zodish.Type.Float, as: TFloat
+  alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -224,6 +225,66 @@ defmodule Zodish do
                | {:lte, Zodish.Option.t(float())}
 
   defdelegate float(opts \\ []), to: TFloat, as: :new
+
+  @doc ~S"""
+  Defines a integer type.
+
+      iex> Z.integer()
+      iex> |> Z.parse(3)
+      {:ok, 3}
+
+  ## Options
+
+  You can use `:gt`, `:gte`, `:lt` and `:lte` to constrain the allowed
+  values.
+
+      iex> Z.integer(gt: 0)
+      iex> |> Z.parse(0)
+      {:error, %Zodish.Issue{message: "Expected a integer greater than 0, got 0"}}
+
+      iex> Z.integer(gte: 0)
+      iex> |> Z.parse(-1)
+      {:error, %Zodish.Issue{message: "Expected a integer greater than or equal to 0, got -1"}}
+
+      iex> Z.integer(lt: 1)
+      iex> |> Z.parse(2)
+      {:error, %Zodish.Issue{message: "Expected a integer less than 1, got 2"}}
+
+      iex> Z.integer(lte: 1)
+      iex> |> Z.parse(2)
+      {:error, %Zodish.Issue{message: "Expected a integer less than or equal to 1, got 2"}}
+
+  You can use `:coerce` to cast the given value into a integer before
+  validation.
+
+      iex> Z.integer(coerce: true)
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
+      iex> Z.integer(coerce: true)
+      iex> |> Z.parse("123.678")
+      {:ok, 123}
+
+  If a float is provided, it will be truncated to an integer.
+
+      iex> Z.integer(coerce: true)
+      iex> |> Z.parse(123.678)
+      {:ok, 123}
+
+  """
+  @spec integer(opts :: [option]) :: TInteger.t()
+        when option:
+               {:coerce, boolean()}
+               | {:gt, integer()}
+               | {:gt, Zodish.Option.t(integer())}
+               | {:gte, integer()}
+               | {:gte, Zodish.Option.t(integer())}
+               | {:lt, integer()}
+               | {:lt, Zodish.Option.t(integer())}
+               | {:lte, integer()}
+               | {:lte, Zodish.Option.t(integer())}
+
+  defdelegate integer(opts \\ []), to: TInteger, as: :new
 
   @doc ~S"""
   Defines a string type.
