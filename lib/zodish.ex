@@ -9,6 +9,7 @@ defmodule Zodish do
   alias Zodish.Type.Boolean, as: TBoolean
   alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
+  alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.String, as: TString
 
   @doc ~S"""
@@ -171,6 +172,60 @@ defmodule Zodish do
   defdelegate date_time(opts \\ []), to: TDateTime, as: :new
 
   @doc ~S"""
+  Defines a float type.
+
+      iex> Z.float()
+      iex> |> Z.parse(3.14)
+      {:ok, 3.14}
+
+  ## Options
+
+  You can use `:gt`, `:gte`, `:lt` and `:lte` to constrain the allowed
+  values.
+
+      iex> Z.float(gt: 0.0)
+      iex> |> Z.parse(0.0)
+      {:error, %Zodish.Issue{message: "Expected a float greater than 0.0, got 0.0"}}
+
+      iex> Z.float(gte: 1.0)
+      iex> |> Z.parse(0.5)
+      {:error, %Zodish.Issue{message: "Expected a float greater than or equal to 1.0, got 0.5"}}
+
+      iex> Z.float(lt: 1.0)
+      iex> |> Z.parse(1.1)
+      {:error, %Zodish.Issue{message: "Expected a float less than 1.0, got 1.1"}}
+
+      iex> Z.float(lte: 1.0)
+      iex> |> Z.parse(1.1)
+      {:error, %Zodish.Issue{message: "Expected a float less than or equal to 1.0, got 1.1"}}
+
+  You can use `:coerce` to cast the given value into a float before
+  validation.
+
+      iex> Z.float(coerce: true)
+      iex> |> Z.parse("3.14")
+      {:ok, 3.14}
+
+      iex> Z.float(coerce: true)
+      iex> |> Z.parse("123")
+      {:ok, 123.0}
+
+  """
+  @spec float(opts :: [option]) :: TFloat.t()
+        when option:
+               {:coerce, boolean()}
+               | {:gt, float()}
+               | {:gt, Zodish.Option.t(float())}
+               | {:gte, float()}
+               | {:gte, Zodish.Option.t(float())}
+               | {:lt, float()}
+               | {:lt, Zodish.Option.t(float())}
+               | {:lte, float()}
+               | {:lte, Zodish.Option.t(float())}
+
+  defdelegate float(opts \\ []), to: TFloat, as: :new
+
+  @doc ~S"""
   Defines a string type.
 
       iex> Z.string()
@@ -229,22 +284,22 @@ defmodule Zodish do
   """
   @spec string(opts :: [option]) :: TString.t()
         when option:
-              {:coerce, boolean()}
-              | {:trim, boolean()}
-              | {:downcase, boolean()}
-              | {:upcase, boolean()}
-              | {:exact_length, non_neg_integer()}
-              | {:exact_length, Zodish.Option.t(non_neg_integer())}
-              | {:min_length, non_neg_integer()}
-              | {:min_length, Zodish.Option.t(non_neg_integer())}
-              | {:max_length, non_neg_integer()}
-              | {:max_length, Zodish.Option.t(non_neg_integer())}
-              | {:starts_with, String.t()}
-              | {:starts_with, Zodish.Option.t(String.t())}
-              | {:ends_with, String.t()}
-              | {:ends_with, Zodish.Option.t(String.t())}
-              | {:regex, Regex.t()}
-              | {:regex, Zodish.Option.t(Regex.t())}
+               {:coerce, boolean()}
+               | {:trim, boolean()}
+               | {:downcase, boolean()}
+               | {:upcase, boolean()}
+               | {:exact_length, non_neg_integer()}
+               | {:exact_length, Zodish.Option.t(non_neg_integer())}
+               | {:min_length, non_neg_integer()}
+               | {:min_length, Zodish.Option.t(non_neg_integer())}
+               | {:max_length, non_neg_integer()}
+               | {:max_length, Zodish.Option.t(non_neg_integer())}
+               | {:starts_with, String.t()}
+               | {:starts_with, Zodish.Option.t(String.t())}
+               | {:ends_with, String.t()}
+               | {:ends_with, Zodish.Option.t(String.t())}
+               | {:regex, Regex.t()}
+               | {:regex, Zodish.Option.t(Regex.t())}
 
   defdelegate string(opts \\ []), to: TString, as: :new
 end
