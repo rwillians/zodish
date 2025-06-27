@@ -7,6 +7,7 @@ defmodule Zodish do
   alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.Atom, as: TAtom
   alias Zodish.Type.Boolean, as: TBoolean
+  alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
   alias Zodish.Type.String, as: TString
 
@@ -128,6 +129,27 @@ defmodule Zodish do
   defdelegate boolean(opts \\ []), to: TBoolean, as: :new
 
   @doc ~S"""
+  Defines a date type.
+
+      iex> Z.date()
+      iex> |> Z.parse(~D[2025-06-27])
+      {:ok, ~D[2025-06-27]}
+
+  ## Options
+
+  You can use `:coerce` to cast the given value into a Date.
+
+      iex> Z.date(coerce: true)
+      iex> |> Z.parse("2025-06-27")
+      {:ok, ~D[2025-06-27]}
+
+  """
+  @spec date(opts :: [option]) :: TDate.t()
+        when option: {:coerce, boolean()}
+
+  defdelegate date(opts \\ []), to: TDate, as: :new
+
+  @doc ~S"""
   Defines a date-time type.
 
       iex> Z.date_time()
@@ -145,7 +167,7 @@ defmodule Zodish do
   """
   @spec date_time(opts :: [option]) :: TDateTime.t()
         when option: {:coerce, boolean()}
-        
+
   defdelegate date_time(opts \\ []), to: TDateTime, as: :new
 
   @doc ~S"""
