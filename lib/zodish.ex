@@ -16,7 +16,11 @@ defmodule Zodish do
       {:ok, "Hello, World!"}
 
   """
-  defdelegate parse(type, value), to: Zodish.Parseable
+  @spec parse(type :: Zodish.Type.t(), value :: any()) ::
+          {:ok, any()}
+          | {:error, Zodish.Issue.t()}
+
+  defdelegate parse(type, value), to: Zodish.Type
 
   #
   #   CORE TYPES
@@ -43,6 +47,8 @@ defmodule Zodish do
       {:ok, {:foo, :bar}}
 
   """
+  @spec any() :: TAny.t()
+
   defdelegate any(), to: TAny, as: :new
 
   @doc ~S"""
@@ -137,5 +143,24 @@ defmodule Zodish do
       {:ok, "123"}
 
   """
+  @spec string(opts :: [option]) :: TString.t()
+        when option:
+              {:coerce, boolean()}
+              | {:trim, boolean()}
+              | {:downcase, boolean()}
+              | {:upcase, boolean()}
+              | {:exact_length, non_neg_integer()}
+              | {:exact_length, Zodish.Option.t(non_neg_integer())}
+              | {:min_length, non_neg_integer()}
+              | {:min_length, Zodish.Option.t(non_neg_integer())}
+              | {:max_length, non_neg_integer()}
+              | {:max_length, Zodish.Option.t(non_neg_integer())}
+              | {:starts_with, String.t()}
+              | {:starts_with, Zodish.Option.t(String.t())}
+              | {:ends_with, String.t()}
+              | {:ends_with, Zodish.Option.t(String.t())}
+              | {:regex, Regex.t()}
+              | {:regex, Zodish.Option.t(Regex.t())}
+
   defdelegate string(opts \\ []), to: TString, as: :new
 end

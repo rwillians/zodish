@@ -1,11 +1,14 @@
-defmodule Zodish.Type do
+defprotocol Zodish.Type do
   @moduledoc ~S"""
-  Helper module for creating Zodish types.
+  Protocol for parsing values based on Zodish types.
   """
 
-  defmacro __using__(_) do
-    quote do
-      import Zodish.Option, only: [merge_opts: 2]
-    end
-  end
+  @doc ~S"""
+  Parses a value based on the given Zodish type.
+  """
+  @spec parse(type :: t(), value :: any()) ::
+          {:ok, any()}
+          | {:error, String.t()}
+
+  def parse(type, value)
 end

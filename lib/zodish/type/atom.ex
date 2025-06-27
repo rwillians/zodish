@@ -3,8 +3,6 @@ defmodule Zodish.Type.Atom do
   This module describes a Zodish atom type.
   """
 
-  use Zodish.Type
-
   alias __MODULE__, as: TAtom
 
   @type t() :: %TAtom{
@@ -26,13 +24,13 @@ defmodule Zodish.Type.Atom do
       do: %{type | coerce: value}
 end
 
-defimpl Zodish.Parseable, for: Zodish.Type.Atom do
+defimpl Zodish.Type, for: Zodish.Type.Atom do
   import Zodish.Helpers, only: [typeof: 1]
   import Zodish.Issue, only: [issue: 1]
 
   alias Zodish.Type.Atom, as: TAtom
 
-  @impl Zodish.Parseable
+  @impl Zodish.Type
   def parse(%TAtom{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

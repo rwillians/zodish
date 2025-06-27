@@ -3,7 +3,7 @@ defmodule Zodish.Type.String do
   This module describes a Zodish string type.
   """
 
-  use Zodish.Type
+  import Zodish.Option, only: [merge_opts: 2]
 
   alias __MODULE__, as: TString
 
@@ -99,13 +99,13 @@ defmodule Zodish.Type.String do
     do: %{type | regex: {value, merge_opts(@opts, opts)}}
 end
 
-defimpl Zodish.Parseable, for: Zodish.Type.String do
+defimpl Zodish.Type, for: Zodish.Type.String do
   import Zodish.Helpers, only: [typeof: 1]
   import Zodish.Issue, only: [issue: 1, issue: 2]
 
   alias Zodish.Type.String, as: TString
 
-  @impl Zodish.Parseable
+  @impl Zodish.Type
   def parse(%TString{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),
