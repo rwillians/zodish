@@ -14,6 +14,7 @@ defmodule Zodish do
   alias Zodish.Type.List, as: TList
   alias Zodish.Type.Literal, as: TLiteral
   alias Zodish.Type.Number, as: TNumber
+  alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Tuple, as: TTuple
 
@@ -407,6 +408,48 @@ defmodule Zodish do
                | {:lte, Zodish.Option.t(number())}
 
   defdelegate number(opts \\ []), to: TNumber, as: :new
+
+  @doc ~S"""
+  Makes a given inner type optional, where you can also define a
+  default value to be used when the actual value resolves to `nil`.
+
+      iex> Z.optional(Z.integer())
+      iex> |> Z.parse(nil)
+      {:ok, nil}
+
+  ## Options
+
+  You can use `:default` to define a default value to be used when
+  the actual value resolves to `nil`.
+
+      iex> Z.optional(Z.integer(), default: 42)
+      iex> |> Z.parse(nil)
+      {:ok, 42}
+
+      iex> Z.optional(Z.integer(), default: fn -> 42 end)
+      iex> |> Z.parse(nil)
+      {:ok, 42}
+
+  The default value must satisfy the inner type of the `Zodish.Type.Optional`.
+  If you provide a default value other than a function that doesn't
+  satisfy the inner type, it will raise an `ArgumentError`.
+
+      iex> Z.optional(Z.integer(), default: "not a number")
+      ** (ArgumentError) The default value must satisfy the inner type of Zodish.Type.Optional
+
+  If you provide a function as the default value though and it returns
+  a value that doesn't satisfy the inner type, it will return a
+  `Zodish.Issue` since this check cannot be done at compile time.
+
+      iex> Z.optional(Z.integer(), default: fn -> "abc" end)
+      iex> |> Z.parse(nil)
+      {:error, %Zodish.Issue{message: "Expected a integer, got string"}}
+
+  """
+  @spec optional(inner_type :: Zodish.Type.t(), opts :: [option]) :: TOptional.t()
+        when option: {:default, (-> any()) | any() | nil}
+
+  defdelegate optional(inner_type, opts \\ []), to: TOptional, as: :new
 
   @doc ~S"""
   Defines a string type.
