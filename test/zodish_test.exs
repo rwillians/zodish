@@ -4,5 +4,6 @@ defmodule ZodishTest do
   alias Zodish, as: Z
 
   doctest Zodish.Helpers
+  doctest Zodish.Issue
   doctest Zodish
 end

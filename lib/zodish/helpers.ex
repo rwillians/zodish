@@ -3,6 +3,9 @@ defmodule Zodish.Helpers do
   Common utility functions.
   """
 
+  import Keyword, only: [keyword?: 1]
+  import String, only: [slice: 2, ends_with?: 2]
+
   @doc ~S"""
   Pluralizes a given word based on common English rules.
   """
@@ -10,16 +13,16 @@ defmodule Zodish.Helpers do
 
   def pluralize(word) do
     cond do
-      String.ends_with?(word, "y") -> String.slice(word, 0..-2//1) <> "ies"
-      String.ends_with?(word, "o") -> word <> "es"
-      String.ends_with?(word, "s") -> word <> "es"
-      String.ends_with?(word, "x") -> word <> "es"
-      String.ends_with?(word, "z") -> word <> "es"
-      String.ends_with?(word, "ch") -> word <> "es"
-      String.ends_with?(word, "sh") -> word <> "es"
-      String.ends_with?(word, "f") -> String.slice(word, 0..-2//1) <> "ves"
-      String.ends_with?(word, "fe") -> String.slice(word, 0..-3//1) <> "ves"
-      String.ends_with?(word, "man") -> String.slice(word, 0..-4//1) <> "men"
+      ends_with?(word, "y") -> slice(word, 0..-2//1) <> "ies"
+      ends_with?(word, "o") -> word <> "es"
+      ends_with?(word, "s") -> word <> "es"
+      ends_with?(word, "x") -> word <> "es"
+      ends_with?(word, "z") -> word <> "es"
+      ends_with?(word, "ch") -> word <> "es"
+      ends_with?(word, "sh") -> word <> "es"
+      ends_with?(word, "f") -> slice(word, 0..-2//1) <> "ves"
+      ends_with?(word, "fe") -> slice(word, 0..-3//1) <> "ves"
+      ends_with?(word, "man") -> slice(word, 0..-4//1) <> "men"
       true -> word <> "s"
     end
   end
@@ -54,7 +57,7 @@ defmodule Zodish.Helpers do
   def typeof(value) when is_bitstring(value), do: "bitstring"
   def typeof(value) when is_float(value), do: "float"
   def typeof(value) when is_integer(value), do: "integer"
-  def typeof(value) when is_list(value), do: if(Keyword.keyword?(value), do: "keyword", else: "list")
+  def typeof(value) when is_list(value), do: if(keyword?(value), do: "keyword", else: "list")
   def typeof(%mod{}), do: "%#{to_mod_name(mod)}{}"
   def typeof(%{__struct__: mod}), do: "%#{to_mod_name(mod)}{}"
   def typeof(value) when is_map(value), do: "map"

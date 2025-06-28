@@ -3,6 +3,7 @@ defmodule Zodish.Issue do
   Represents an issue while parsing a value.
   """
 
+  import Enum, only: [map: 2, reduce: 3]
   import Zodish.Helpers, only: [pluralize: 2]
 
   alias __MODULE__, as: Issue
@@ -21,9 +22,28 @@ defmodule Zodish.Issue do
             issues: [],
             parse_score: 0
 
+  @doc ~S"""
+  Creates a new issue with the given message.
+
+      iex> Zodish.Issue.issue("An error occurred")
+      %Zodish.Issue{message: "An error occurred"}
+
+  """
+  @spec issue(message :: String.t()) :: t()
+
   def issue(message)
       when is_binary(message),
       do: %Issue{message: message}
+
+  @doc ~S"""
+  Creates a new issue after replacing any variables in the given
+  message for their value in the given context map.
+
+      iex> Zodish.Issue.issue("The value of {{key}} is invalid", %{key: "foo"})
+      %Zodish.Issue{message: "The value of foo is invalid"}
+
+  """
+  @spec issue(message :: String.t(), ctx :: map()) :: t()
 
   def issue(message, %{} = ctx) when is_binary(message) do
     message
@@ -32,12 +52,68 @@ defmodule Zodish.Issue do
     |> issue()
   end
 
+  @doc ~S"""
+  Appends a set of segments to the given issue's path.
+
+      iex> %Zodish.Issue{path: [:a], message: "An error occurred"}
+      iex> |> Zodish.Issue.append_path([:b, :c])
+      %Zodish.Issue{path: [:a, :b, :c], message: "An error occurred"}
+
+  """
+  @spec append_path(issue :: t(), segments :: [segment()]) :: t()
+
+  def append_path(%Issue{} = issue, segments)
+      when is_list(segments),
+      do: %{issue | path: issue.path ++ segments}
+
+  @doc ~S"""
+  Prepends a set of segments to the given issue's path.
+
+      iex> %Zodish.Issue{path: [:c], message: "An error occurred"}
+      iex> |> Zodish.Issue.prepend_path([:a, :b])
+      %Zodish.Issue{path: [:a, :b, :c], message: "An error occurred"}
+
+  """
+  @spec prepend_path(issue :: t(), segments :: [segment()]) :: t()
+
+  def prepend_path(%Issue{} = issue, segments)
+      when is_list(segments),
+      do: %{issue | path: segments ++ issue.path}
+
+  @doc ~S"""
+  Flattens the issues of a given `Zodish.Issue` struct.
+
+      iex> Zodish.Issue.flatten(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex>   %Zodish.Issue{
+      iex>     path: [0],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: [:email], message: "Is required"}],
+      iex>     parse_score: 1
+      iex>   },
+      iex>   %Zodish.Issue{
+      iex>     path: [1],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: [:name], message: "Is required"}],
+      iex>     parse_score: 1,
+      iex>   }
+      iex> ]})
+      %Zodish.Issue{message: "One or more items failed validation", issues: [
+        %Zodish.Issue{path: [0, :email], message: "Is required"},
+        %Zodish.Issue{path: [1, :name], message: "Is required"}
+      ]}
+
+  """
+  @spec flatten(issue :: t()) :: t()
+
+  def flatten(%Issue{issues: []} = issue), do: issue
+  def flatten(%Issue{} = issue), do: %{issue | issues: flatten_issues(issue.issues, issue.path)}
+
   #
   #   PRIVATE
   #
 
   defp replace_variables(str, ctx) do
-    Enum.reduce(ctx, str, fn {key, value}, acc ->
+    reduce(ctx, str, fn {key, value}, acc ->
       String.replace(acc, "{{#{key}}}", to_string(value))
     end)
   end
@@ -48,6 +124,17 @@ defmodule Zodish.Issue do
       ctx
       |> Map.fetch!(String.to_existing_atom(count_field))
       |> pluralize(word)
+    end)
+  end
+
+  defp flatten_issues([], _path), do: []
+
+  defp flatten_issues([_ | _] = issues, path) do
+    reduce(issues, [], fn issue, acc ->
+      case issue.issues do
+        [] -> acc ++ [prepend_path(issue, path)]
+        [_ | _] -> acc ++ flatten_issues(map(issue.issues, &prepend_path(&1, issue.path)), path)
+      end
     end)
   end
 end

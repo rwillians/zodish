@@ -1,6 +1,6 @@
 defmodule Zodish do
   @moduledoc ~S"""
-  Zodish is a schema parser and validator library heavily inspired by
+  Zodish is a schema parser and validation library heavily inspired by
   JavaScript's Zod.
   """
 
@@ -13,6 +13,7 @@ defmodule Zodish do
   alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.String, as: TString
+  alias Zodish.Type.Tuple, as: TTuple
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -422,4 +423,28 @@ defmodule Zodish do
                | {:regex, Zodish.Option.t(Regex.t())}
 
   defdelegate string(opts \\ []), to: TString, as: :new
+
+  @doc ~S"""
+  Defines a tuple type.
+
+      iex> Z.tuple([Z.atom(), Z.integer()])
+      iex> |> Z.parse({:ok, 123})
+      {:ok, {:ok, 123}}
+
+      iex> Z.tuple([Z.atom(), Z.integer(), Z.string()])
+      iex> |> Z.parse({:ok, "abc"})
+      {:error, %Zodish.Issue{message: "Expected a tuple of length 3, got length 2"}}
+
+      iex> Z.tuple([Z.atom(), Z.integer()])
+      iex> |> Z.parse({:ok, "abc"})
+      {:error, %Zodish.Issue{
+        message: "One or more elements of the tuple did not match the expected type",
+        parse_score: 1,
+        issues: [%Zodish.Issue{path: [1], message: "Expected a integer, got string"}],
+      }}
+
+  """
+  @spec tuple(elements :: [Zodish.Type.t(), ...]) :: TTuple.t()
+
+  defdelegate tuple(elements), to: TTuple, as: :new
 end
