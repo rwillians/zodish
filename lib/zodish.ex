@@ -12,6 +12,7 @@ defmodule Zodish do
   alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.List, as: TList
+  alias Zodish.Type.Literal, as: TLiteral
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Tuple, as: TTuple
@@ -332,6 +333,22 @@ defmodule Zodish do
               | {:max_length, Zodish.Option.t(non_neg_integer())}
 
   defdelegate list(inner_type, opts \\ []), to: TList, as: :new
+
+  @doc ~S"""
+  Defines a type that only accepts a specific value.
+
+      iex> Z.literal("foo")
+      iex> |> Z.parse("foo")
+      {:ok, "foo"}
+
+      iex> Z.literal(42)
+      iex> |> Z.parse(51)
+      {:error, %Zodish.Issue{message: "Expected to be 42, got 51"}}
+
+  """
+  @spec literal(value :: any()) :: TLiteral.t()
+
+  defdelegate literal(value), to: TLiteral, as: :new
 
   @doc ~S"""
   Defines a number type.
