@@ -11,6 +11,7 @@ defmodule Zodish do
   alias Zodish.Type.DateTime, as: TDateTime
   alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.Integer, as: TInteger
+  alias Zodish.Type.List, as: TList
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Tuple, as: TTuple
@@ -287,6 +288,50 @@ defmodule Zodish do
                | {:lte, Zodish.Option.t(integer())}
 
   defdelegate integer(opts \\ []), to: TInteger, as: :new
+
+  @doc ~S"""
+  Defines a list type.
+
+      iex> Z.list(Z.integer())
+      iex> |> Z.parse([1, 2, 3])
+      {:ok, [1, 2, 3]}
+
+      iex> Z.list(Z.integer())
+      iex> |> Z.parse([1, 2, "3"])
+      {:error, %Zodish.Issue{
+        message: "One or more items of the list did not match the expected type",
+        parse_score: 2,
+        issues: [%Zodish.Issue{path: [2], message: "Expected a integer, got string"}]
+      }}
+
+  ## Options
+
+  You can use `:exact_length`, `:min_length` and `:max_length` to
+  constrain the length of the list.
+
+      iex> Z.list(Z.integer(), exact_length: 3)
+      iex> |> Z.parse([1, 2, 3, 4])
+      {:error, %Zodish.Issue{message: "Expected list to have exactly 3 items, got 4 items"}}
+
+      iex> Z.list(Z.integer(), min_length: 1)
+      iex> |> Z.parse([])
+      {:error, %Zodish.Issue{message: "Expected list to have at least 1 item, got 0 items"}}
+
+      iex> Z.list(Z.integer(), max_length: 3)
+      iex> |> Z.parse([1, 2, 3, 4])
+      {:error, %Zodish.Issue{message: "Expected list to have at most 3 items, got 4 items"}}
+
+  """
+  @spec list(inner_type :: Zodish.Type.t(), opts :: [option]) :: TList.t()
+        when option:
+              {:exact_length, non_neg_integer()}
+              | {:exact_length, Zodish.Option.t(non_neg_integer())}
+              | {:min_length, non_neg_integer()}
+              | {:min_length, Zodish.Option.t(non_neg_integer())}
+              | {:max_length, non_neg_integer()}
+              | {:max_length, Zodish.Option.t(non_neg_integer())}
+
+  defdelegate list(inner_type, opts \\ []), to: TList, as: :new
 
   @doc ~S"""
   Defines a number type.

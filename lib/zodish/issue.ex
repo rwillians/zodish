@@ -118,12 +118,14 @@ defmodule Zodish.Issue do
     end)
   end
 
-  @slot ~r/\{\{([^\|]+)\|([^\}]+)\}\}/
+  @slot ~r/\{\{([^\s\|]+)\s?\|\s?([^\}]+)\}\}/
   defp replace_pluralize_slots(str, ctx) do
     Regex.replace(@slot, str, fn _slot, count_field, word ->
-      ctx
-      |> Map.fetch!(String.to_existing_atom(count_field))
-      |> pluralize(word)
+      count = Map.fetch!(ctx, String.to_existing_atom(count_field))
+      #                              ↑ this will only raise if you're
+      #                                trying to pluralize a variable
+      #                                that doesn't exist in the ctx
+      "#{count} #{pluralize(count, word)}"
     end)
   end
 

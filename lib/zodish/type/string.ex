@@ -69,17 +69,17 @@ defmodule Zodish.Type.String do
       when is_boolean(value),
       do: %{type | upcase: value}
 
-  @opts [error: "Expected string to have exactly {{exact_length}} {{exact_length|character}}, got {{actual_length}} {{actual_length|character}}"]
+  @opts [error: "Expected string to have exactly {{exact_length | character}}, got {{actual_length | character}}"]
   def exact_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to have at least {{min_length}} {{min_length|character}}, got {{actual_length}} {{actual_length|character}}"]
+  @opts [error: "Expected string to have at least {{min_length | character}}, got {{actual_length | character}}"]
   def min_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | min_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to have at most {{max_length}} {{max_length|character}}, got {{actual_length}} {{actual_length|character}}"]
+  @opts [error: "Expected string to have at most {{max_length | character}}, got {{actual_length | character}}"]
   def max_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | max_length: {value, merge_opts(@opts, opts)}}

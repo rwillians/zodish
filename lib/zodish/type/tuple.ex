@@ -19,7 +19,7 @@ defmodule Zodish.Type.Tuple do
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Tuple do
-  import Enum, only: [reduce: 3, reject: 2, with_index: 1]
+  import Enum, only: [reduce: 3, with_index: 1]
   import List, only: [to_tuple: 1]
   import Zodish.Helpers, only: [typeof: 1]
   import Zodish.Issue, only: [flatten: 1, issue: 1, prepend_path: 2]
@@ -45,22 +45,18 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
   defp validate_type(value) when is_tuple(value), do: :ok
   defp validate_type(value), do: {:error, issue("Expected a tuple, got #{typeof(value)}")}
 
-  @skipped :__skipped__
-  defp skipped?(@skipped), do: true
-  defp skipped?(_), do: false
-
   defp parse_tuple(%TTuple{elements: elements}, value)
        when length(elements) != tuple_size(value),
        do: {:error, issue("Expected a tuple of length #{length(elements)}, got length #{tuple_size(value)}")}
 
   defp parse_tuple(%TTuple{} = type, value) do
-    {parsed, issues} =
+    {parsed_elems, issues} =
       type.elements
       |> with_index()
-      |> reduce({[], []}, fn {elem_type, index}, {acc_value, acc_issues} ->
+      |> reduce({[], []}, fn {elem_type, index}, {acc_elems, acc_issues} ->
         case Zodish.Type.parse(elem_type, elem(value, index)) do
-          {:ok, parsed} -> {[parsed | acc_value], acc_issues}
-          {:error, issue} -> {[@skipped | acc_value], [prepend_path(issue, [index]) | acc_issues]}
+          {:ok, parsed} -> {[parsed | acc_elems], acc_issues}
+          {:error, issue} -> {acc_elems, [prepend_path(issue, [index]) | acc_issues]}
         end
       end)
 
@@ -70,8 +66,8 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
     }
 
     case issues do
-      [] -> {:ok, to_tuple(:lists.reverse(parsed))}
-      [_ | _] -> {:error, %{flatten(issue) | parse_score: length(reject(parsed, &skipped?/1))}}
+      [] -> {:ok, to_tuple(:lists.reverse(parsed_elems))}
+      [_ | _] -> {:error, %{flatten(issue) | parse_score: length(parsed_elems)}}
     end
   end
 end
