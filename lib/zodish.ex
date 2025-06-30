@@ -457,6 +457,10 @@ defmodule Zodish do
   Makes a given inner type optional, where you can also define a
   default value to be used when the actual value resolves to `nil`.
 
+      iex> Z.integer()
+      iex> |> Z.parse(nil)
+      {:error, %Zodish.Issue{message: "Is required"}}
+
       iex> Z.optional(Z.integer())
       iex> |> Z.parse(nil)
       {:ok, nil}
