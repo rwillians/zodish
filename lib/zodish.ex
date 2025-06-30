@@ -842,6 +842,102 @@ defmodule Zodish do
   #
 
   @doc ~S"""
+  Merges two Map types into one, where `:mode` is inherited from the
+  most strict mode between the two given types.
+
+      iex> a = Z.map(:strip, %{name: Z.string()})
+      iex> b = Z.map(:strict, %{age: Z.integer()})
+      iex>
+      iex> Z.merge(a, b)
+      iex> |> Z.parse(%{name: "John Doe", age: 27, email: "johndoe@gmail.com"})
+      {:error, %Zodish.Issue{
+        message: "One or more fields failed validation",
+        parse_score: 3,
+        issues: [%Zodish.Issue{path: ["email"], message: "Unknown field"}]
+      }}
+
+  """
+  @spec merge(a :: TMap.t(), b :: TMap.t()) :: TMap.t()
+
+  def merge(%TMap{} = a, %TMap{} = b), do: TMap.new(most_strict(a.mode, b.mode), Map.merge(a.shape, b.shape))
+
+  defp most_strict(:strict, _), do: :strict
+  defp most_strict(_, :strict), do: :strict
+  defp most_strict(:strip, :strip), do: :strip
+
+  @doc ~S"""
+  Removes the specified keys from the type's shape.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer()})
+      iex> |> Z.omit([:age])
+      iex> |> Z.parse(%{name: "John Doe"})
+      {:ok, %{name: "John Doe"}}
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.omit([:line_1, :line_2])
+      iex> |> Z.parse(%{
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  """
+  @spec omit(type, keys :: [atom()]) :: TMap.t()
+        when type: TMap.t()
+  @spec omit(type, keys :: [atom()]) :: TStruct.t()
+        when type: TStruct.t()
+
+  def omit(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
+  def omit(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
+
+  @doc ~S"""
+  Keeps only the specified keys from the type's shape.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer()})
+      iex> |> Z.pick([:name])
+      iex> |> Z.parse(%{name: "John Doe"})
+      {:ok, %{name: "John Doe"}}
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.pick([:city, :state, :zip])
+      iex> |> Z.parse(%{
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  """
+  @spec pick(type, keys :: [atom()]) :: TMap.t()
+        when type: TMap.t()
+  @spec pick(type, keys :: [atom()]) :: TStruct.t()
+        when type: TStruct.t()
+
+  def pick(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
+  def pick(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
+
+  @doc ~S"""
   Refines a value with a custom validation.
 
       iex> is_even = fn x -> rem(x, 2) == 0 end
