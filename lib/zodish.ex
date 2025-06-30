@@ -842,6 +842,54 @@ defmodule Zodish do
   #
 
   @doc ~S"""
+  Updates the given type's `:exact_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(exact_length: 1)
+      iex> |> Z.exact_length(2)
+      iex> |> Z.parse([1])
+      {:error, %Zodish.Issue{message: "Expected list to have exactly 2 items, got 1 item"}}
+
+      iex> Z.string(exact_length: 5)
+      iex> |> Z.exact_length(1)
+      iex> |> Z.parse("Hello")
+      {:error, %Zodish.Issue{message: "Expected string to have exactly 1 character, got 5 characters"}}
+
+  """
+  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def exact_length(type, length, opts \\ [])
+  def exact_length(%TList{} = type, length, opts), do: TList.exact_length(type, length, opts)
+  def exact_length(%TString{} = type, length, opts), do: TString.exact_length(type, length, opts)
+
+  @doc ~S"""
+  Updates the given type's `:max_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(max_length: 3)
+      iex> |> Z.max_length(2)
+      iex> |> Z.parse([1, 2, 3])
+      {:error, %Zodish.Issue{message: "Expected list to have at most 2 items, got 3 items"}}
+
+      iex> Z.string(max_length: 3)
+      iex> |> Z.max_length(1)
+      iex> |> Z.parse("Foo")
+      {:error, %Zodish.Issue{message: "Expected string to have at most 1 character, got 3 characters"}}
+
+  """
+  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def max_length(type, length, opts \\ [])
+  def max_length(%TList{} = type, length, opts), do: TList.max_length(type, length, opts)
+  def max_length(%TString{} = type, length, opts), do: TString.max_length(type, length, opts)
+
+  @doc ~S"""
   Merges two Map types into one, where `:mode` is inherited from the
   most strict mode between the two given types.
 
@@ -864,6 +912,30 @@ defmodule Zodish do
   defp most_strict(:strict, _), do: :strict
   defp most_strict(_, :strict), do: :strict
   defp most_strict(:strip, :strip), do: :strip
+
+  @doc ~S"""
+  Updates the given type's `:min_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(min_length: 1)
+      iex> |> Z.min_length(2)
+      iex> |> Z.parse([1])
+      {:error, %Zodish.Issue{message: "Expected list to have at least 2 items, got 1 item"}}
+
+      iex> Z.string(min_length: 1)
+      iex> |> Z.min_length(6)
+      iex> |> Z.parse("Foo")
+      {:error, %Zodish.Issue{message: "Expected string to have at least 6 characters, got 3 characters"}}
+
+  """
+  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def min_length(type, length, opts \\ [])
+  def min_length(%TList{} = type, length, opts), do: TList.min_length(type, length, opts)
+  def min_length(%TString{} = type, length, opts), do: TString.min_length(type, length, opts)
 
   @doc ~S"""
   Removes the specified keys from the type's shape.
