@@ -46,6 +46,22 @@ defmodule Zodish.Helpers do
   def pluralize(count, <<word::binary>>) when is_integer(count) and count >= 0, do: pluralize(word)
 
   @doc ~S"""
+  Returns the name of the given module without the "Elixir." prefix.
+
+      iex> to_string(Zodish.Type.Map)
+      "Elixir.Zodish.Type.Map"
+
+      iex> Zodish.Helpers.to_mod_name(Zodish.Type.Map)
+      "Zodish.Type.Map"
+
+  """
+  @spec to_mod_name(mod :: module()) :: String.t()
+
+  def to_mod_name(mod)
+      when is_atom(mod),
+      do: String.replace(to_string(mod), ~r/^Elixir\./, "")
+
+  @doc ~S"""
   Returns the type of the given value.
   """
   @spec typeof(value :: any()) :: String.t()
@@ -66,10 +82,4 @@ defmodule Zodish.Helpers do
   def typeof(value) when is_pid(value), do: "pid"
   def typeof(value) when is_port(value), do: "port"
   def typeof(value) when is_reference(value), do: "reference"
-
-  #
-  #   PRIVATE
-  #
-
-  defp to_mod_name(mod), do: String.replace(to_string(mod), ~r/^Elixir\./, "")
 end

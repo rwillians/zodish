@@ -17,6 +17,7 @@ defmodule Zodish do
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.String, as: TString
+  alias Zodish.Type.Struct, as: TStruct
   alias Zodish.Type.Tuple, as: TTuple
 
   @doc ~S"""
@@ -571,6 +572,69 @@ defmodule Zodish do
                | {:regex, Zodish.Option.t(Regex.t())}
 
   defdelegate string(opts \\ []), to: TString, as: :new
+
+  @doc ~S"""
+  Defines a struct type.
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.parse(%{
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        line_1: "123 Main St",
+        line_2: "Apt 4B",
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  If your Zodish type includes a key that doesn't exist in the struct,
+  then an `ArgumentError` will be raised.
+
+      iex> Z.struct(Address, %{name: Z.string()})
+      ** (ArgumentError) The shape key :name doesn't exist in struct ZodishTest.Address
+
+  A Zodish struct type works like a Map type in :strict mode, meaning
+  if a field that isn't present in the struct is provided in the input,
+  then it will fail validation.
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.parse(%{
+      iex>   name: "John Doe",
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:error, %Zodish.Issue{
+        message: "One or more fields failed validation",
+        parse_score: 6,
+        issues: [%Zodish.Issue{path: ["name"], message: "Unknown field"}]
+      }}
+
+  """
+  @spec struct(mod, shape) :: TStruct.t()
+        when mod: module,
+             shape: %{required(atom()) => Zodish.Type.t()}
+
+  defdelegate struct(mod, shape), to: TStruct, as: :new
 
   @doc ~S"""
   Defines a tuple type.
