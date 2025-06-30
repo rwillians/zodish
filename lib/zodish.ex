@@ -23,6 +23,8 @@ defmodule Zodish do
   alias Zodish.Type.Tuple, as: TTuple
   alias Zodish.Type.Uuid, as: TUuid
 
+  alias Zodish.Type.Refine, as: Refine
+
   @doc ~S"""
   Parses a value based on the given type.
 
@@ -791,4 +793,39 @@ defmodule Zodish do
   `:v4`, `:v5`, `:v6`, `:v7` and `:v8`.
   """
   defdelegate uuid(version \\ :any), to: TUuid, as: :new
+
+  #
+  #   COMBINATORS API
+  #   Keep them sorted alphabetically!
+  #
+
+  @doc ~S"""
+  Refines a value with a custom validation.
+
+      iex> is_even = fn x -> rem(x, 2) == 0 end
+      iex>
+      iex> Z.integer()
+      iex> |> Z.refine(is_even)
+      iex> |> Z.parse(3)
+      {:error, %Zodish.Issue{message: "Is invalid", parse_score: 1}}
+
+  ## Options
+
+  You can use the options `:error` to set a custom error message that
+  will be used when the validation fails.
+
+      iex> is_even = fn x -> rem(x, 2) == 0 end
+      iex>
+      iex> Z.integer()
+      iex> |> Z.refine(is_even, error: "Must be even")
+      iex> |> Z.parse(3)
+      {:error, %Zodish.Issue{message: "Must be even", parse_score: 1}}
+
+  """
+  @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()
+        when inner_type: Zodish.Type.t(),
+             fun: Refine.refine_fun(),
+             option: {:error, String.t()}
+
+  defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new
 end
