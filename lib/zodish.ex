@@ -21,6 +21,7 @@ defmodule Zodish do
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Struct, as: TStruct
   alias Zodish.Type.Tuple, as: TTuple
+  alias Zodish.Type.Uuid, as: TUuid
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -764,4 +765,30 @@ defmodule Zodish do
   @spec tuple(elements :: [Zodish.Type.t(), ...]) :: TTuple.t()
 
   defdelegate tuple(elements), to: TTuple, as: :new
+
+  @doc ~S"""
+  Defines a UUID type (decorated String type).
+
+      iex> Z.uuid()
+      iex> |> Z.parse("550e8400-e29b-41d4-a716-446655440000")
+      {:ok, "550e8400-e29b-41d4-a716-446655440000"}
+
+  You can optionally specify which version of UUID to validate for.
+
+      iex> Z.uuid(:any)
+      iex> |> Z.parse("550e8400-e29b-41d4-a716-446655440000")
+      {:ok, "550e8400-e29b-41d4-a716-446655440000"}
+
+      iex> Z.uuid(:v4)
+      iex> |> Z.parse("67ef5479-e5c2-411f-9cfc-82ff3c17a76e")
+      {:ok, "67ef5479-e5c2-411f-9cfc-82ff3c17a76e"}
+
+      iex> Z.uuid(:v7)
+      iex> |> Z.parse("019798df-04e0-7279-8bca-26f70bb361d2")
+      {:ok, "019798df-04e0-7279-8bca-26f70bb361d2"}
+
+  There are 9 supported options: `:any` (default), `:v1`, `:v2`, `:v3`,
+  `:v4`, `:v5`, `:v6`, `:v7` and `:v8`.
+  """
+  defdelegate uuid(version \\ :any), to: TUuid, as: :new
 end
