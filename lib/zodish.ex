@@ -9,6 +9,7 @@ defmodule Zodish do
   alias Zodish.Type.Boolean, as: TBoolean
   alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
+  alias Zodish.Type.Email, as: TEmail
   alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.List, as: TList
@@ -178,6 +179,58 @@ defmodule Zodish do
         when option: {:coerce, boolean()}
 
   defdelegate date_time(opts \\ []), to: TDateTime, as: :new
+
+  @doc ~S"""
+  Defines an email type (decorated String type).
+
+      iex> Z.email()
+      iex> |> Z.parse("foo@bar.com")
+      {:ok, "foo@bar.com"}
+
+  ## Options
+
+  You can choose which ruleset to use for validating the email address
+  by setting the `:ruleset` option. There are 4 options available:
+  - `:gmail` (default) - same rules as Gmail;
+  - `:html5` - same rules browsers use to validate `input[type=email]` fields;
+  - `:rfc5322` - same rules as the classic emailregex.com (RFC 5322); and
+  - `:unicode` - a loose set of rules that allows Unicode (good for intl emails);
+
+      iex> Z.email(ruleset: :gmail)
+      iex> |> Z.parse("foo@bar.com")
+      {:ok, "foo@bar.com"}
+
+      iex> Z.email(ruleset: :html5)
+      iex> |> Z.parse("foo@bar.com")
+      {:ok, "foo@bar.com"}
+
+      iex> Z.email(ruleset: :rfc5322)
+      iex> |> Z.parse("foo@bar.com")
+      {:ok, "foo@bar.com"}
+
+      iex> Z.email(ruleset: :unicode)
+      iex> |> Z.parse("foo@bar.com")
+      {:ok, "foo@bar.com"}
+
+  ## Errors
+
+  When the given string is empty:
+
+      iex> Z.email()
+      iex> |> Z.parse("")
+      {:error, %Zodish.Issue{message: "Cannot be empty"}}
+
+  When the given string is not a valid email address:
+
+      iex> Z.email()
+      iex> |> Z.parse("foo@")
+      {:error, %Zodish.Issue{message: "Invalid email address"}}
+
+  """
+  @spec email(opts :: [option]) :: TEmail.t()
+        when option: {:ruleset, :gmail | :html5 | :rfc5322 | :unicode}
+
+  defdelegate email(opts \\ []), to: TEmail, as: :new
 
   @doc ~S"""
   Defines a float type.
