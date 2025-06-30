@@ -21,6 +21,7 @@ defmodule Zodish do
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Struct, as: TStruct
   alias Zodish.Type.Tuple, as: TTuple
+  alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.Uuid, as: TUuid
 
   alias Zodish.Type.Refine, as: Refine
@@ -305,19 +306,19 @@ defmodule Zodish do
 
       iex> Z.integer(gt: 0)
       iex> |> Z.parse(0)
-      {:error, %Zodish.Issue{message: "Expected a integer greater than 0, got 0"}}
+      {:error, %Zodish.Issue{message: "Expected an integer greater than 0, got 0"}}
 
       iex> Z.integer(gte: 0)
       iex> |> Z.parse(-1)
-      {:error, %Zodish.Issue{message: "Expected a integer greater than or equal to 0, got -1"}}
+      {:error, %Zodish.Issue{message: "Expected an integer greater than or equal to 0, got -1"}}
 
       iex> Z.integer(lt: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected a integer less than 1, got 2"}}
+      {:error, %Zodish.Issue{message: "Expected an integer less than 1, got 2"}}
 
       iex> Z.integer(lte: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected a integer less than or equal to 1, got 2"}}
+      {:error, %Zodish.Issue{message: "Expected an integer less than or equal to 1, got 2"}}
 
   You can use `:coerce` to cast the given value into a integer before
   validation.
@@ -363,7 +364,7 @@ defmodule Zodish do
       {:error, %Zodish.Issue{
         message: "One or more items of the list did not match the expected type",
         parse_score: 3,
-        issues: [%Zodish.Issue{path: ["2"], message: "Expected a integer, got string"}]
+        issues: [%Zodish.Issue{path: ["2"], message: "Expected an integer, got string"}]
       }}
 
   ## Options
@@ -549,7 +550,7 @@ defmodule Zodish do
 
       iex> Z.optional(Z.integer(), default: fn -> "abc" end)
       iex> |> Z.parse(nil)
-      {:error, %Zodish.Issue{message: "Expected a integer, got string"}}
+      {:error, %Zodish.Issue{message: "Expected an integer, got string"}}
 
   """
   @spec optional(inner_type :: Zodish.Type.t(), opts :: [option]) :: TOptional.t()
@@ -761,13 +762,53 @@ defmodule Zodish do
       {:error, %Zodish.Issue{
         message: "One or more elements of the tuple did not match the expected type",
         parse_score: 1,
-        issues: [%Zodish.Issue{path: ["1"], message: "Expected a integer, got string"}],
+        issues: [%Zodish.Issue{path: ["1"], message: "Expected an integer, got string"}],
       }}
 
   """
   @spec tuple(elements :: [Zodish.Type.t(), ...]) :: TTuple.t()
 
   defdelegate tuple(elements), to: TTuple, as: :new
+
+  @doc ~S"""
+  Defines a union type of 2 or more schemas.
+
+      iex> Z.union([
+      iex>   Z.string(),
+      iex>   Z.integer()
+      iex> ])
+      iex> |> Z.parse("Hello, World!")
+      {:ok, "Hello, World!"}
+
+      iex> Z.union([
+      iex>   Z.string(),
+      iex>   Z.integer()
+      iex> ])
+      iex> |> Z.parse(23.45)
+      {:error, %Zodish.Issue{message: "Expected an integer, got float"}}
+
+  The resulting error will be from the schema which made the most
+  progress parsing the value.
+
+      iex> a = Z.map(%{foo: Z.string(), bar: Z.integer(), baz: Z.boolean()})
+      iex> b = Z.map(%{foo: Z.string(), qux: Z.float()})
+      iex>
+      iex> Z.union([a, b])
+      iex> |> Z.parse(%{foo: "Hello", bar: 123})
+      {:error, %Zodish.Issue{message: "One or more fields failed validation", parse_score: 3, issues: [
+        %Zodish.Issue{path: ["baz"], message: "Is required"}
+      ]}}
+
+  > #### Warning {: .warning}
+  >
+  > The logic for selecting the best schema validation issues is still
+  > a work in progress and may be changed in the future.
+
+  """
+  @spec union(inner_types) :: TUnion.t()
+        when inner_types: [Zodish.Type.t(), ...]
+
+  defdelegate union(schemas), to: TUnion, as: :new
 
   @doc ~S"""
   Defines a UUID type (decorated String type).

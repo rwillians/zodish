@@ -37,10 +37,10 @@ end
 defimpl Zodish.Type, for: Zodish.Type.Refine do
   import Zodish.Issue, only: [issue: 1, parse_score: 1]
 
-  alias Zodish.Type.Refine, as: TRefine
+  alias Zodish.Type.Refine, as: Refine
 
   @impl Zodish.Type
-  def parse(%TRefine{} = type, value) do
+  def parse(%Refine{} = type, value) do
     with {:ok, value} <- Zodish.Type.parse(type.inner_type, value),
          {:ok, value} <- refine(type, value),
          do: {:ok, value}
@@ -50,7 +50,7 @@ defimpl Zodish.Type, for: Zodish.Type.Refine do
   #   PRIVATE
   #
 
-  defp refine(%TRefine{fun: fun} = type, value) do
+  defp refine(%Refine{fun: fun} = type, value) do
     case apply(fun, [value]) do
       true -> {:ok, value}
       false -> {:error, %{issue(type.error) | parse_score: parse_score(value)}}

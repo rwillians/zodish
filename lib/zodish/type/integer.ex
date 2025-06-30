@@ -40,22 +40,22 @@ defmodule Zodish.Type.Integer do
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @opts [error: "Expected a integer greater than {{gt}}, got {{value}}"]
+  @opts [error: "Expected an integer greater than {{gt}}, got {{value}}"]
   def gt(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a integer greater than or equal to {{gte}}, got {{value}}"]
+  @opts [error: "Expected an integer greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a integer less than {{lt}}, got {{value}}"]
+  @opts [error: "Expected an integer less than {{lt}}, got {{value}}"]
   def lt(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a integer less than or equal to {{lte}}, got {{value}}"]
+  @opts [error: "Expected an integer less than or equal to {{lte}}, got {{value}}"]
   def lte(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | lte: {value, merge_opts(@opts, opts)}}
@@ -107,7 +107,7 @@ defimpl Zodish.Type, for: Zodish.Type.Integer do
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_integer(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a integer, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("Expected an integer, got #{typeof(value)}")}
 
   defp validate_gt(%{gt: nil}, _), do: :ok
   defp validate_gt(%{gt: {gt, opts}}, value) do
