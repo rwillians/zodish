@@ -842,6 +842,42 @@ defmodule Zodish do
   #
 
   @doc ~S"""
+  Enables coercion for the given type.
+
+      iex> Z.integer()
+      iex> |> Z.coerce()
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
+  """
+  @spec coerce(type, value :: boolean() | :unsafe) :: TAtom.t()
+        when type: TAtom.t()
+  @spec coerce(type, value :: boolean()) :: TBoolean.t()
+        when type: TBoolean.t()
+  @spec coerce(type, value :: boolean()) :: TDate.t()
+        when type: TDate.t()
+  @spec coerce(type, value :: boolean()) :: TDateTime.t()
+        when type: TDateTime.t()
+  @spec coerce(type, value :: boolean()) :: TFloat.t()
+        when type: TFloat.t()
+  @spec coerce(type, value :: boolean()) :: TInteger.t()
+        when type: TInteger.t()
+  @spec coerce(type, value :: boolean()) :: TNumber.t()
+        when type: TNumber.t()
+  @spec coerce(type, value :: boolean()) :: TString.t()
+        when type: TString.t()
+
+  def coerce(type, value \\ true)
+  def coerce(%TAtom{} = type, value), do: TAtom.coerce(type, value)
+  def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
+  def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
+  def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
+  def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
+  def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)
+  def coerce(%TNumber{} = type, value), do: TNumber.coerce(type, value)
+  def coerce(%TString{} = type, value), do: TString.coerce(type, value)
+
+  @doc ~S"""
   Updates the given type's `:exact_length` option.
 
       iex> Z.integer()
