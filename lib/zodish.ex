@@ -24,6 +24,7 @@ defmodule Zodish do
   alias Zodish.Type.Uuid, as: TUuid
 
   alias Zodish.Type.Refine, as: Refine
+  alias Zodish.Type.Transform, as: Transform
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -828,4 +829,19 @@ defmodule Zodish do
              option: {:error, String.t()}
 
   defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new
+
+  @doc ~S"""
+  Transforms the parsed value using a given function.
+
+      iex> Z.integer()
+      iex> |> Z.transform(fn x -> x * 2 end)
+      iex> |> Z.parse(3)
+      {:ok, 6}
+
+  """
+  @spec transform(inner_type, fun) :: Transform.t()
+        when inner_type: Zodish.Type.t(),
+             fun: (any() -> any())
+
+  defdelegate transform(inner_type, fun), to: Transform, as: :new
 end
