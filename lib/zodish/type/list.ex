@@ -51,7 +51,7 @@ end
 defimpl Zodish.Type, for: Zodish.Type.List do
   import Enum, only: [reduce: 3, with_index: 1]
   import Zodish.Helpers, only: [typeof: 1]
-  import Zodish.Issue, only: [flatten: 1, issue: 1, issue: 2, prepend_path: 2]
+  import Zodish.Issue, only: [flatten: 1, issue: 1, issue: 2, prepend_path: 2, score: 1]
 
   alias Zodish.Issue
   alias Zodish.Type.List, as: TList
@@ -130,7 +130,7 @@ defimpl Zodish.Type, for: Zodish.Type.List do
 
     case issues do
       [] -> {:ok, :lists.reverse(parsed)}
-      [_ | _] -> {:error, %{flatten(issue) | parse_score: length(parsed)}}
+      [_ | _] -> {:error, %{flatten(issue) | parse_score: score(parsed)}}
     end
   end
 end

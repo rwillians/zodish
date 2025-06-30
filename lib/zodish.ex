@@ -13,6 +13,7 @@ defmodule Zodish do
   alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.List, as: TList
   alias Zodish.Type.Literal, as: TLiteral
+  alias Zodish.Type.Map, as: TMap
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.String, as: TString
@@ -302,7 +303,7 @@ defmodule Zodish do
       iex> |> Z.parse([1, 2, "3"])
       {:error, %Zodish.Issue{
         message: "One or more items of the list did not match the expected type",
-        parse_score: 2,
+        parse_score: 3,
         issues: [%Zodish.Issue{path: [2], message: "Expected a integer, got string"}]
       }}
 
@@ -350,6 +351,48 @@ defmodule Zodish do
   @spec literal(value :: any()) :: TLiteral.t()
 
   defdelegate literal(value), to: TLiteral, as: :new
+
+  @doc ~S"""
+  Defines a map type.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer(gte: 18)})
+      iex> |> Z.parse(%{name: "John Doe", age: 27})
+      {:ok, %{name: "John Doe", age: 27}}
+
+  The keys of the parsed map will always be atoms.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer(gte: 18)})
+      iex> |> Z.parse(%{"name" => "John Doe", "age" => 27})
+      {:ok, %{name: "John Doe", age: 27}}
+
+  ## Options
+
+  You can specify one of two behaviors for how to handle unknown fields
+  in the input value:
+  - `:strip` (default) - Unknown fields will be ignored and not included
+    in the parsed result;
+  - `:strict` - Unknown fields will cause a validation error.
+
+      iex> Z.map(:strip, %{name: Z.string(), age: Z.integer(gte: 18)})
+      iex> |> Z.parse(%{name: "John Doe", email: "johndoe@gmail.com", age: 27})
+      {:ok, %{name: "John Doe", age: 27}}
+
+      iex> Z.map(:strict, %{name: Z.string(), age: Z.integer(gte: 18)})
+      iex> |> Z.parse(%{name: "John Doe", email: "johndoe@gmail.com", age: 27})
+      {:error, %Zodish.Issue{
+        message: "One or more fields failed validation",
+        parse_score: 3,
+        issues: [%Zodish.Issue{path: ["email"], message: "Unknown field"}]
+      }}
+
+  If you need to validate a map where you don't know what keys will be
+  present, then use `Z.record/1` instead.
+  """
+  @spec map(mode, shape) :: TMap.t()
+        when mode: :strip | :strict,
+             shape: %{required(atom()) => Zodish.Type.t()}
+
+  defdelegate map(mode \\ :strip, shape), to: TMap, as: :new
 
   @doc ~S"""
   Defines a number type.

@@ -108,6 +108,39 @@ defmodule Zodish.Issue do
   def flatten(%Issue{issues: []} = issue), do: issue
   def flatten(%Issue{} = issue), do: %{issue | issues: flatten_issues(issue.issues, issue.path)}
 
+  @doc ~S"""
+  Calculates the parse score of a value.
+
+      iex> Zodish.Issue.score(%{ # +1
+      iex>   foo: [ # +1
+      iex>     %{bar: :bar}, # +2
+      iex>     %{baz: {:ok, :baz}} # +4
+      iex>   ]
+      iex> })
+      8
+
+  """
+  @spec score(value :: any()) :: non_neg_integer()
+
+  def score(value), do: score(value, 0)
+
+  defp score(nil, acc), do: acc
+  defp score(value, acc) when is_atom(value), do: acc + 1
+  defp score(value, acc) when is_binary(value), do: acc + 1
+  defp score(value, acc) when is_bitstring(value), do: acc + 1
+  defp score(value, acc) when is_boolean(value), do: acc + 1
+  defp score(value, acc) when is_float(value), do: acc + 1
+  defp score(value, acc) when is_function(value), do: acc + 1
+  defp score(value, acc) when is_integer(value), do: acc + 1
+  defp score(value, acc) when is_pid(value), do: acc + 1
+  defp score(value, acc) when is_port(value), do: acc + 1
+  defp score(value, acc) when is_reference(value), do: acc + 1
+  defp score(value, acc) when is_tuple(value), do: acc + 1 + tuple_size(value)
+  defp score([], acc), do: acc + 1
+  defp score([_ | _] = value, acc), do: acc + 1 + Enum.sum(Enum.map(value, &score/1))
+  defp score(%_{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(Map.from_struct(value)), &score/1))
+  defp score(%{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(value), &score/1))
+
   #
   #   PRIVATE
   #
