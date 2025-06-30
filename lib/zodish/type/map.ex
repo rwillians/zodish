@@ -34,7 +34,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
   def parse(%TMap{} = schema, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),
-         do: parse_shape(schema, value)
+         do: parse_value(schema, value)
   end
 
   #
@@ -65,7 +65,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
     end)
   end
 
-  defp parse_shape(%TMap{mode: :strip} = type, map) do
+  defp parse_value(%TMap{mode: :strip} = type, map) do
     {parsed, issues} = parse_known_fields(type.shape, map)
 
     issue = flatten(%Issue{
@@ -79,7 +79,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
     end
   end
 
-  defp parse_shape(%TMap{mode: :strict} = type, value) do
+  defp parse_value(%TMap{mode: :strict} = type, value) do
     known_fields_index =
       Map.keys(type.shape)
       |> Enum.map(&to_string/1)

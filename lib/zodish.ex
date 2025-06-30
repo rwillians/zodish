@@ -17,6 +17,7 @@ defmodule Zodish do
   alias Zodish.Type.Map, as: TMap
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.Optional, as: TOptional
+  alias Zodish.Type.Record, as: TRecord
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Struct, as: TStruct
   alias Zodish.Type.Tuple, as: TTuple
@@ -551,6 +552,53 @@ defmodule Zodish do
         when option: {:default, (-> any()) | any() | nil}
 
   defdelegate optional(inner_type, opts \\ []), to: TOptional, as: :new
+
+  @doc ~S"""
+  Defines a record type.
+
+      iex> Z.record()
+      iex> |> Z.parse(%{"foo" => "bar"})
+      {:ok, %{"foo" => "bar"}}
+
+  ## Options
+
+  You can use the option `:keys` to default a schema for the keys in
+  the record.
+
+      iex> Z.record(keys: Z.string(min_length: 1))
+      iex> |> Z.parse(%{foo: "bar"})
+      {:error, %Zodish.Issue{
+        path: [],
+        message: "One or more fields failed validation",
+        parse_score: 1,
+        issues: [%Zodish.Issue{path: ["foo"], message: "Expected a string, got atom"}]
+      }}
+
+  Although you can specify a schema for the keys, it must be a string
+  type.
+
+      iex> Z.record(keys: Z.integer())
+      ** (ArgumentError) Record keys must be string
+
+  You can use the option `:values` to set a schema that will be used
+  to parse the values in the record.
+
+      iex> Z.record(values: Z.string(min_length: 1))
+      iex> |> Z.parse(%{"foo" => ""})
+      {:error, %Zodish.Issue{
+        path: [],
+        message: "One or more fields failed validation",
+        parse_score: 1,
+        issues: [%Zodish.Issue{path: ["foo"], message: "Expected string to have at least 1 character, got 0 characters"}],
+      }}
+
+  """
+  @spec record(opts :: [option]) :: TRecord.t()
+        when option:
+               {:keys, Zodish.Type.t()}
+               | {:values, Zodish.Type.t()}
+
+  defdelegate record(opts \\ []), to: TRecord, as: :new
 
   @doc ~S"""
   Defines a string type.
