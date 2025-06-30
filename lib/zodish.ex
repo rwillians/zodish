@@ -305,7 +305,7 @@ defmodule Zodish do
       {:error, %Zodish.Issue{
         message: "One or more items of the list did not match the expected type",
         parse_score: 3,
-        issues: [%Zodish.Issue{path: [2], message: "Expected a integer, got string"}]
+        issues: [%Zodish.Issue{path: ["2"], message: "Expected a integer, got string"}]
       }}
 
   ## Options
@@ -656,7 +656,7 @@ defmodule Zodish do
       {:error, %Zodish.Issue{
         message: "One or more elements of the tuple did not match the expected type",
         parse_score: 1,
-        issues: [%Zodish.Issue{path: [1], message: "Expected a integer, got string"}],
+        issues: [%Zodish.Issue{path: ["1"], message: "Expected a integer, got string"}],
       }}
 
   """

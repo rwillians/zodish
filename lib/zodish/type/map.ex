@@ -25,7 +25,7 @@ end
 
 defimpl Zodish.Type, for: Zodish.Type.Map do
   import Zodish.Helpers, only: [typeof: 1]
-  import Zodish.Issue, only: [flatten: 1, issue: 1, prepend_path: 2, score: 1]
+  import Zodish.Issue, only: [flatten: 1, issue: 1, parse_score: 1, prepend_path: 2]
 
   alias Zodish.Issue
   alias Zodish.Type.Map, as: TMap
@@ -75,7 +75,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
 
     case issues do
       [] -> {:ok, parsed}
-      [_ | _] -> {:error, %{issue | parse_score: score(parsed)}}
+      [_ | _] -> {:error, %{issue | parse_score: parse_score(parsed)}}
     end
   end
 
@@ -103,7 +103,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
 
     case issues do
       [] -> {:ok, parsed}
-      [_ | _] -> {:error, %{issue | parse_score: score(parsed)}}
+      [_ | _] -> {:error, %{issue | parse_score: parse_score(parsed)}}
     end
   end
 end

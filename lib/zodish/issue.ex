@@ -11,7 +11,7 @@ defmodule Zodish.Issue do
   @type segment() :: atom() | non_neg_integer() | String.t()
 
   @type t() :: %Issue{
-          path: [segment()],
+          path: [String.t()],
           message: String.t(),
           issues: [t()],
           parse_score: non_neg_integer()
@@ -55,51 +55,51 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Appends a set of segments to the given issue's path.
 
-      iex> %Zodish.Issue{path: [:a], message: "An error occurred"}
+      iex> %Zodish.Issue{path: ["a"], message: "An error occurred"}
       iex> |> Zodish.Issue.append_path([:b, :c])
-      %Zodish.Issue{path: [:a, :b, :c], message: "An error occurred"}
+      %Zodish.Issue{path: ["a", "b", "c"], message: "An error occurred"}
 
   """
   @spec append_path(issue :: t(), segments :: [segment()]) :: t()
 
   def append_path(%Issue{} = issue, segments)
       when is_list(segments),
-      do: %{issue | path: issue.path ++ segments}
+      do: %{issue | path: issue.path ++ map(segments, &to_string/1)}
 
   @doc ~S"""
   Prepends a set of segments to the given issue's path.
 
-      iex> %Zodish.Issue{path: [:c], message: "An error occurred"}
+      iex> %Zodish.Issue{path: ["c"], message: "An error occurred"}
       iex> |> Zodish.Issue.prepend_path([:a, :b])
-      %Zodish.Issue{path: [:a, :b, :c], message: "An error occurred"}
+      %Zodish.Issue{path: ["a", "b", "c"], message: "An error occurred"}
 
   """
   @spec prepend_path(issue :: t(), segments :: [segment()]) :: t()
 
   def prepend_path(%Issue{} = issue, segments)
       when is_list(segments),
-      do: %{issue | path: segments ++ issue.path}
+      do: %{issue | path: map(segments, &to_string/1) ++ issue.path}
 
   @doc ~S"""
   Flattens the issues of a given `Zodish.Issue` struct.
 
       iex> Zodish.Issue.flatten(%Zodish.Issue{message: "One or more items failed validation", issues: [
       iex>   %Zodish.Issue{
-      iex>     path: [0],
+      iex>     path: ["0"],
       iex>     message: "One or more fields failed validation",
-      iex>     issues: [%Zodish.Issue{path: [:email], message: "Is required"}],
+      iex>     issues: [%Zodish.Issue{path: ["email"], message: "Is required"}],
       iex>     parse_score: 1
       iex>   },
       iex>   %Zodish.Issue{
-      iex>     path: [1],
+      iex>     path: ["1"],
       iex>     message: "One or more fields failed validation",
-      iex>     issues: [%Zodish.Issue{path: [:name], message: "Is required"}],
+      iex>     issues: [%Zodish.Issue{path: ["name"], message: "Is required"}],
       iex>     parse_score: 1,
       iex>   }
       iex> ]})
       %Zodish.Issue{message: "One or more items failed validation", issues: [
-        %Zodish.Issue{path: [0, :email], message: "Is required"},
-        %Zodish.Issue{path: [1, :name], message: "Is required"}
+        %Zodish.Issue{path: ["0", "email"], message: "Is required"},
+        %Zodish.Issue{path: ["1", "name"], message: "Is required"}
       ]}
 
   """
@@ -109,9 +109,9 @@ defmodule Zodish.Issue do
   def flatten(%Issue{} = issue), do: %{issue | issues: flatten_issues(issue.issues, issue.path)}
 
   @doc ~S"""
-  Calculates the parse score of a value.
+  Calculates the parse score of a given parsed value.
 
-      iex> Zodish.Issue.score(%{ # +1
+      iex> Zodish.Issue.parse_score(%{ # +1
       iex>   foo: [ # +1
       iex>     %{bar: :bar}, # +2
       iex>     %{baz: {:ok, :baz}} # +4
@@ -120,26 +120,26 @@ defmodule Zodish.Issue do
       8
 
   """
-  @spec score(value :: any()) :: non_neg_integer()
+  @spec parse_score(value :: any()) :: non_neg_integer()
 
-  def score(value), do: score(value, 0)
+  def parse_score(value), do: parse_score(value, 0)
 
-  defp score(nil, acc), do: acc
-  defp score(value, acc) when is_atom(value), do: acc + 1
-  defp score(value, acc) when is_binary(value), do: acc + 1
-  defp score(value, acc) when is_bitstring(value), do: acc + 1
-  defp score(value, acc) when is_boolean(value), do: acc + 1
-  defp score(value, acc) when is_float(value), do: acc + 1
-  defp score(value, acc) when is_function(value), do: acc + 1
-  defp score(value, acc) when is_integer(value), do: acc + 1
-  defp score(value, acc) when is_pid(value), do: acc + 1
-  defp score(value, acc) when is_port(value), do: acc + 1
-  defp score(value, acc) when is_reference(value), do: acc + 1
-  defp score(value, acc) when is_tuple(value), do: acc + 1 + tuple_size(value)
-  defp score([], acc), do: acc + 1
-  defp score([_ | _] = value, acc), do: acc + 1 + Enum.sum(Enum.map(value, &score/1))
-  defp score(%_{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(Map.from_struct(value)), &score/1))
-  defp score(%{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(value), &score/1))
+  defp parse_score(nil, acc), do: acc
+  defp parse_score(value, acc) when is_atom(value), do: acc + 1
+  defp parse_score(value, acc) when is_binary(value), do: acc + 1
+  defp parse_score(value, acc) when is_bitstring(value), do: acc + 1
+  defp parse_score(value, acc) when is_boolean(value), do: acc + 1
+  defp parse_score(value, acc) when is_float(value), do: acc + 1
+  defp parse_score(value, acc) when is_function(value), do: acc + 1
+  defp parse_score(value, acc) when is_integer(value), do: acc + 1
+  defp parse_score(value, acc) when is_pid(value), do: acc + 1
+  defp parse_score(value, acc) when is_port(value), do: acc + 1
+  defp parse_score(value, acc) when is_reference(value), do: acc + 1
+  defp parse_score(value, acc) when is_tuple(value), do: acc + 1 + tuple_size(value)
+  defp parse_score([], acc), do: acc + 1
+  defp parse_score([_ | _] = value, acc), do: acc + 1 + Enum.sum(Enum.map(value, &parse_score/1))
+  defp parse_score(%_{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(Map.from_struct(value)), &parse_score/1))
+  defp parse_score(%{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(value), &parse_score/1))
 
   #
   #   PRIVATE
