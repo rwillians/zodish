@@ -52,6 +52,23 @@ defmodule Zodish.Issue do
     |> issue()
   end
 
+  defp replace_variables(str, ctx) do
+    reduce(ctx, str, fn {key, value}, acc ->
+      String.replace(acc, "{{#{key}}}", to_string(value))
+    end)
+  end
+
+  @slot ~r/\{\{([^\s\|]+)\s?\|\s?([^\}]+)\}\}/
+  defp replace_pluralize_slots(str, ctx) do
+    Regex.replace(@slot, str, fn _slot, count_field, word ->
+      count = Map.fetch!(ctx, String.to_existing_atom(count_field))
+      #                              ↑ this will only raise if you're
+      #                                trying to pluralize a variable
+      #                                that doesn't exist in the ctx
+      "#{count} #{pluralize(count, word)}"
+    end)
+  end
+
   @doc ~S"""
   Appends a set of segments to the given issue's path.
 
@@ -108,6 +125,17 @@ defmodule Zodish.Issue do
   def flatten(%Issue{issues: []} = issue), do: issue
   def flatten(%Issue{} = issue), do: %{issue | issues: flatten_issues(issue.issues, issue.path)}
 
+  defp flatten_issues([], _path), do: []
+
+  defp flatten_issues([_ | _] = issues, path) do
+    reduce(issues, [], fn issue, acc ->
+      case issue.issues do
+        [] -> acc ++ [prepend_path(issue, path)]
+        [_ | _] -> acc ++ flatten_issues(map(issue.issues, &prepend_path(&1, issue.path)), path)
+      end
+    end)
+  end
+
   @doc ~S"""
   Calculates the parse score of a given parsed value.
 
@@ -140,36 +168,4 @@ defmodule Zodish.Issue do
   defp parse_score([_ | _] = value, acc), do: acc + 1 + Enum.sum(Enum.map(value, &parse_score/1))
   defp parse_score(%_{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(Map.from_struct(value)), &parse_score/1))
   defp parse_score(%{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(value), &parse_score/1))
-
-  #
-  #   PRIVATE
-  #
-
-  defp replace_variables(str, ctx) do
-    reduce(ctx, str, fn {key, value}, acc ->
-      String.replace(acc, "{{#{key}}}", to_string(value))
-    end)
-  end
-
-  @slot ~r/\{\{([^\s\|]+)\s?\|\s?([^\}]+)\}\}/
-  defp replace_pluralize_slots(str, ctx) do
-    Regex.replace(@slot, str, fn _slot, count_field, word ->
-      count = Map.fetch!(ctx, String.to_existing_atom(count_field))
-      #                              ↑ this will only raise if you're
-      #                                trying to pluralize a variable
-      #                                that doesn't exist in the ctx
-      "#{count} #{pluralize(count, word)}"
-    end)
-  end
-
-  defp flatten_issues([], _path), do: []
-
-  defp flatten_issues([_ | _] = issues, path) do
-    reduce(issues, [], fn issue, acc ->
-      case issue.issues do
-        [] -> acc ++ [prepend_path(issue, path)]
-        [_ | _] -> acc ++ flatten_issues(map(issue.issues, &prepend_path(&1, issue.path)), path)
-      end
-    end)
-  end
 end
