@@ -39,15 +39,15 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp validate_type(value) when is_tuple(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a tuple, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a tuple, got #{typeof(value)}")}
 
   defp parse_tuple(%TTuple{elements: elements}, value)
        when length(elements) != tuple_size(value),
-       do: {:error, issue("Expected a tuple of length #{length(elements)}, got length #{tuple_size(value)}")}
+       do: {:error, issue("expected a tuple of length #{length(elements)}, got length #{tuple_size(value)}")}
 
   defp parse_tuple(%TTuple{} = type, value) do
     {parsed_elems, issues} =
@@ -61,7 +61,7 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
       end)
 
     issue = %Issue{
-      message: "One or more elements of the tuple did not match the expected type",
+      message: "one or more elements of the tuple did not match the expected type",
       issues: issues,
     }
 

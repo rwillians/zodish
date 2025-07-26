@@ -41,11 +41,11 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp validate_type(value) when is_non_struct_map(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a map, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a map, got #{typeof(value)}")}
 
   defp get(map, key) do
     {:ok, value} =
@@ -69,7 +69,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
     {parsed, issues} = parse_known_fields(type.shape, map)
 
     issue = flatten(%Issue{
-      message: "One or more fields failed validation",
+      message: "one or more fields failed validation",
       issues: :lists.reverse(issues)
     })
 
@@ -91,13 +91,13 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
     unknown_field_issues =
       for key <- given_fields,
           not Map.has_key?(known_fields_index, key),
-          do: prepend_path(issue("Unknown field"), [key])
+          do: prepend_path(issue("unknown field"), [key])
 
     {parsed, other_issues} = parse_known_fields(type.shape, value)
     issues = unknown_field_issues ++ other_issues
 
     issue = flatten(%Issue{
-      message: "One or more fields failed validation",
+      message: "one or more fields failed validation",
       issues: :lists.reverse(issues)
     })
 

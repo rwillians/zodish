@@ -22,7 +22,7 @@ defimpl Zodish.Type, for: Zodish.Type.Literal do
   alias Zodish.Type.Literal, as: TLiteral
 
   @impl Zodish.Type
-  def parse(%TLiteral{}, nil), do: {:error, issue("Is required")}
+  def parse(%TLiteral{}, nil), do: {:error, issue("is required")}
   def parse(%TLiteral{value: same}, same), do: {:ok, same}
-  def parse(%TLiteral{value: expected}, actual), do: {:error, issue("Expected to be #{inspect(expected)}, got #{inspect(actual)}")}
+  def parse(%TLiteral{value: expected}, actual), do: {:error, issue("expected to be exactly #{inspect(expected)}, got #{inspect(actual)}")}
 end

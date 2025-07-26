@@ -42,13 +42,13 @@ defimpl Zodish.Type, for: Zodish.Type.Atom do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp coerce(%{coerce: true}, <<_, _::binary>> = value) do
     {:ok, String.to_existing_atom(value)}
   rescue
-    _ -> {:error, issue("Cannot coerce string #{inspect(value)} into an existing atom")}
+    _ -> {:error, issue("cannot coerce string #{inspect(value)} into an existing atom")}
   end
   defp coerce(%{coerce: :unsafe}, <<_, _::binary>> = value) do
     {:ok, String.to_existing_atom(value)}
@@ -58,5 +58,5 @@ defimpl Zodish.Type, for: Zodish.Type.Atom do
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_atom(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected an atom, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected an atom, got #{typeof(value)}")}
 end

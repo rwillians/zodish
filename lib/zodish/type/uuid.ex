@@ -24,7 +24,7 @@ defimpl Zodish.Type, for: Zodish.Type.Uuid do
 
     TString.new()
     |> TString.exact_length(36)
-    |> TString.regex(regex, error: "Invalid UUID")
+    |> TString.regex(regex, error: "is invalid")
     |> Zodish.Type.parse(value)
   end
 

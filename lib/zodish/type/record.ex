@@ -56,11 +56,11 @@ defimpl Zodish.Type, for: Zodish.Type.Record do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp validate_type(%{} = value) when not is_struct(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a map, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a map, got #{typeof(value)}")}
 
   defp parse_value(%TRecord{} = schema, value) do
     {parsed, issues} =
@@ -74,7 +74,7 @@ defimpl Zodish.Type, for: Zodish.Type.Record do
       end)
 
     issue = flatten(%Issue{
-      message: "One or more fields failed validation",
+      message: "one or more fields failed validation",
       issues: :lists.reverse(issues)
     })
 

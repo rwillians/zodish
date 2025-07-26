@@ -41,17 +41,17 @@ defimpl Zodish.Type, for: Zodish.Type.DateTime do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp coerce(%{coerce: true}, <<value::binary>>) do
     case DateTime.from_iso8601(value) do
       {:ok, datetime, _} -> {:ok, datetime}
-      {:error, _} -> {:error, issue("Expected a valid ISO8601 date-time string, got #{inspect(value)}")}
+      {:error, _} -> {:error, issue("expected a valid ISO8601 date-time string, got #{inspect(value)}")}
     end
   end
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(%DateTime{}), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a DateTime, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a DateTime, got #{typeof(value)}")}
 end

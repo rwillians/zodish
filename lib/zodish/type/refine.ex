@@ -12,7 +12,7 @@ defmodule Zodish.Type.Refine do
 
   defstruct inner_type: nil,
             fun: nil,
-            error: "Is invalid"
+            error: "is invalid"
 
   def new(%_{} = inner_type, fun, opts \\ [])
       when is_function(fun, 1) and is_list(opts) do

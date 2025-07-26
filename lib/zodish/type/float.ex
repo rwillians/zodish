@@ -40,22 +40,22 @@ defmodule Zodish.Type.Float do
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @opts [error: "Expected a float greater than {{gt}}, got {{value}}"]
+  @opts [error: "expected a float greater than {{gt}}, got {{value}}"]
   def gt(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a float greater than or equal to {{gte}}, got {{value}}"]
+  @opts [error: "expected a float greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a float less than {{lt}}, got {{value}}"]
+  @opts [error: "expected a float less than {{lt}}, got {{value}}"]
   def lt(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a float less than or equal to {{lte}}, got {{value}}"]
+  @opts [error: "expected a float less than or equal to {{lte}}, got {{value}}"]
   def lte(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | lte: {value, merge_opts(@opts, opts)}}
@@ -83,7 +83,7 @@ defimpl Zodish.Type, for: Zodish.Type.Float do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp parse_float_string(value) do

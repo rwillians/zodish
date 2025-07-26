@@ -32,17 +32,17 @@ defmodule Zodish.Type.List do
     end)
   end
 
-  @opts [error: "Expected list to have exactly {{exact_length | item}}, got {{actual_length | item}}"]
+  @opts [error: "expected list to have exactly {{exact_length | item}}, got {{actual_length | item}}"]
   def exact_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected list to have at least {{min_length | item}}, got {{actual_length | item}}"]
+  @opts [error: "expected list to have at least {{min_length | item}}, got {{actual_length | item}}"]
   def min_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | min_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected list to have at most {{max_length | item}}, got {{actual_length | item}}"]
+  @opts [error: "expected list to have at most {{max_length | item}}, got {{actual_length | item}}"]
   def max_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | max_length: {value, merge_opts(@opts, opts)}}
@@ -70,17 +70,17 @@ defimpl Zodish.Type, for: Zodish.Type.List do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp validate_type([]), do: :ok
   defp validate_type([_ | _] = value) do
     case Keyword.keyword?(value) do
       false -> :ok
-      true -> {:error, issue("Expected a list, got a keyword list")}
+      true -> {:error, issue("expected a list, got a keyword list")}
     end
   end
-  defp validate_type(value), do: {:error, issue("Expected a list, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a list, got #{typeof(value)}")}
 
   defp validate_exact_length(%TList{exact_length: nil}, _), do: :ok
   defp validate_exact_length(%TList{exact_length: {exact_length, opts}}, value) do
@@ -124,7 +124,7 @@ defimpl Zodish.Type, for: Zodish.Type.List do
       end)
 
     issue = %Issue{
-      message: "One or more items of the list did not match the expected type",
+      message: "one or more items of the list did not match the expected type",
       issues: issues
     }
 

@@ -41,7 +41,7 @@ defimpl Zodish.Type, for: Zodish.Type.Boolean do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   @truthy ["true", "1", "yes", "y", "on", "enabled"]
@@ -54,5 +54,5 @@ defimpl Zodish.Type, for: Zodish.Type.Boolean do
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_boolean(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a boolean, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a boolean, got #{typeof(value)}")}
 end

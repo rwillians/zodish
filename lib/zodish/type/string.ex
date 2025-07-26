@@ -69,32 +69,32 @@ defmodule Zodish.Type.String do
       when is_boolean(value),
       do: %{type | upcase: value}
 
-  @opts [error: "Expected string to have exactly {{exact_length | character}}, got {{actual_length | character}}"]
+  @opts [error: "expected string to have exactly {{exact_length | character}}, got {{actual_length | character}}"]
   def exact_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to have at least {{min_length | character}}, got {{actual_length | character}}"]
+  @opts [error: "expected string to have at least {{min_length | character}}, got {{actual_length | character}}"]
   def min_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | min_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to have at most {{max_length | character}}, got {{actual_length | character}}"]
+  @opts [error: "expected string to have at most {{max_length | character}}, got {{actual_length | character}}"]
   def max_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | max_length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to start with \"{{prefix}}\", got \"{{value}}\""]
+  @opts [error: "expected string to start with \"{{prefix}}\", got \"{{value}}\""]
   def starts_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | starts_with: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to end with \"{{suffix}}\", got \"{{value}}\""]
+  @opts [error: "expected string to end with \"{{suffix}}\", got \"{{value}}\""]
   def ends_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | ends_with: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected string to match {{pattern}}, got \"{{value}}\""]
+  @opts [error: "expected string to match {{pattern}}, got \"{{value}}\""]
   def regex(%TString{} = type, %Regex{} = value, opts \\ []),
     do: %{type | regex: {value, merge_opts(@opts, opts)}}
 end
@@ -126,7 +126,7 @@ defimpl Zodish.Type, for: Zodish.Type.String do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp coerce(%{coerce: false}, value), do: {:ok, value}
@@ -138,7 +138,7 @@ defimpl Zodish.Type, for: Zodish.Type.String do
   end
 
   defp validate_type(<<_::binary>>), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a string, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a string, got #{typeof(value)}")}
 
   defp trim(%{trim: false}, value), do: {:ok, value}
   defp trim(%{trim: true}, value), do: {:ok, String.trim(value)}

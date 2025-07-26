@@ -10,6 +10,7 @@ defmodule Zodish do
   alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
   alias Zodish.Type.Email, as: TEmail
+  alias Zodish.Type.Enum, as: TEnum
   alias Zodish.Type.Float, as: TFloat
   alias Zodish.Type.Integer, as: TInteger
   alias Zodish.Type.List, as: TList
@@ -90,7 +91,7 @@ defmodule Zodish do
 
       iex> Z.atom(coerce: true)
       iex> |> Z.parse("alksdhfwejh")
-      {:error, %Zodish.Issue{message: "Cannot coerce string \"alksdhfwejh\" into an existing atom"}}
+      {:error, %Zodish.Issue{message: "cannot coerce string \"alksdhfwejh\" into an existing atom"}}
 
   If you want to allow unsafe coercion of any string into an atom, you
   can set `:coerce` to `:unsafe`.
@@ -168,7 +169,7 @@ defmodule Zodish do
   @doc ~S"""
   Defines a date-time type.
 
-      iex> Z.date_time()
+      iex> Z.datetime()
       iex> |> Z.parse(~U[2025-06-27T12:00:00.000Z])
       {:ok, ~U[2025-06-27T12:00:00.000Z]}
 
@@ -176,15 +177,15 @@ defmodule Zodish do
 
   You can use `:coerce` to cast the given value into a DateTime.
 
-      iex> Z.date_time(coerce: true)
+      iex> Z.datetime(coerce: true)
       iex> |> Z.parse("2025-06-27T12:00:00.000Z")
       {:ok, ~U[2025-06-27T12:00:00.000Z]}
 
   """
-  @spec date_time(opts :: [option]) :: TDateTime.t()
+  @spec datetime(opts :: [option]) :: TDateTime.t()
         when option: {:coerce, boolean()}
 
-  defdelegate date_time(opts \\ []), to: TDateTime, as: :new
+  defdelegate datetime(opts \\ []), to: TDateTime, as: :new
 
   @doc ~S"""
   Defines an email type (decorated String type).
@@ -224,19 +225,55 @@ defmodule Zodish do
 
       iex> Z.email()
       iex> |> Z.parse("")
-      {:error, %Zodish.Issue{message: "Cannot be empty"}}
+      {:error, %Zodish.Issue{message: "cannot be empty"}}
 
   When the given string is not a valid email address:
 
       iex> Z.email()
       iex> |> Z.parse("foo@")
-      {:error, %Zodish.Issue{message: "Invalid email address"}}
+      {:error, %Zodish.Issue{message: "invalid email address"}}
 
   """
   @spec email(opts :: [option]) :: TEmail.t()
         when option: {:ruleset, :gmail | :html5 | :rfc5322 | :unicode}
 
   defdelegate email(opts \\ []), to: TEmail, as: :new
+
+  @doc ~S"""
+  Defines an enum type (atoms only).
+
+      iex> Z.enum([:foo, :bar])
+      iex> |> Z.parse(:foo)
+      {:ok, :foo}
+
+  ## Options
+
+  You can use `:coerce` to cast the given value into an atom.
+
+      iex> Z.enum(coerce: true, values: [:foo, :bar])
+      iex> |> Z.parse("bar")
+      {:ok, :bar}
+
+  ## Errors
+
+  When the given value is not an atom:
+
+      iex> Z.enum([:foo, :bar])
+      iex> |> Z.parse("baz")
+      {:error, %Zodish.Issue{message: "expected an atom, got string"}}
+
+  When the given value is not an atom but coerce is set to true:
+
+      iex> Z.enum(coerce: true, values: [:foo, :bar])
+      iex> |> Z.parse("baz")
+      {:error, %Zodish.Issue{message: "is invalid"}}
+
+  """
+  @spec enum(values :: [atom(), ...]) :: TEnum.t()
+  @spec enum(opts :: [option]) :: TEnum.t()
+        when option: {:coerce, boolean()} | {:values, [atom(), ...]}
+
+  defdelegate enum(opts), to: TEnum, as: :new
 
   @doc ~S"""
   Defines a float type.
@@ -252,19 +289,19 @@ defmodule Zodish do
 
       iex> Z.float(gt: 0.0)
       iex> |> Z.parse(0.0)
-      {:error, %Zodish.Issue{message: "Expected a float greater than 0.0, got 0.0"}}
+      {:error, %Zodish.Issue{message: "expected a float greater than 0.0, got 0.0"}}
 
       iex> Z.float(gte: 1.0)
       iex> |> Z.parse(0.5)
-      {:error, %Zodish.Issue{message: "Expected a float greater than or equal to 1.0, got 0.5"}}
+      {:error, %Zodish.Issue{message: "expected a float greater than or equal to 1.0, got 0.5"}}
 
       iex> Z.float(lt: 1.0)
       iex> |> Z.parse(1.1)
-      {:error, %Zodish.Issue{message: "Expected a float less than 1.0, got 1.1"}}
+      {:error, %Zodish.Issue{message: "expected a float less than 1.0, got 1.1"}}
 
       iex> Z.float(lte: 1.0)
       iex> |> Z.parse(1.1)
-      {:error, %Zodish.Issue{message: "Expected a float less than or equal to 1.0, got 1.1"}}
+      {:error, %Zodish.Issue{message: "expected a float less than or equal to 1.0, got 1.1"}}
 
   You can use `:coerce` to cast the given value into a float before
   validation.
@@ -306,19 +343,19 @@ defmodule Zodish do
 
       iex> Z.integer(gt: 0)
       iex> |> Z.parse(0)
-      {:error, %Zodish.Issue{message: "Expected an integer greater than 0, got 0"}}
+      {:error, %Zodish.Issue{message: "expected an integer greater than 0, got 0"}}
 
       iex> Z.integer(gte: 0)
       iex> |> Z.parse(-1)
-      {:error, %Zodish.Issue{message: "Expected an integer greater than or equal to 0, got -1"}}
+      {:error, %Zodish.Issue{message: "expected an integer greater than or equal to 0, got -1"}}
 
       iex> Z.integer(lt: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected an integer less than 1, got 2"}}
+      {:error, %Zodish.Issue{message: "expected an integer less than 1, got 2"}}
 
       iex> Z.integer(lte: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected an integer less than or equal to 1, got 2"}}
+      {:error, %Zodish.Issue{message: "expected an integer less than or equal to 1, got 2"}}
 
   You can use `:coerce` to cast the given value into a integer before
   validation.
@@ -362,9 +399,9 @@ defmodule Zodish do
       iex> Z.list(Z.integer())
       iex> |> Z.parse([1, 2, "3"])
       {:error, %Zodish.Issue{
-        message: "One or more items of the list did not match the expected type",
+        message: "one or more items of the list did not match the expected type",
         parse_score: 3,
-        issues: [%Zodish.Issue{path: ["2"], message: "Expected an integer, got string"}]
+        issues: [%Zodish.Issue{path: ["2"], message: "expected an integer, got string"}]
       }}
 
   ## Options
@@ -374,15 +411,15 @@ defmodule Zodish do
 
       iex> Z.list(Z.integer(), exact_length: 3)
       iex> |> Z.parse([1, 2, 3, 4])
-      {:error, %Zodish.Issue{message: "Expected list to have exactly 3 items, got 4 items"}}
+      {:error, %Zodish.Issue{message: "expected list to have exactly 3 items, got 4 items"}}
 
       iex> Z.list(Z.integer(), min_length: 1)
       iex> |> Z.parse([])
-      {:error, %Zodish.Issue{message: "Expected list to have at least 1 item, got 0 items"}}
+      {:error, %Zodish.Issue{message: "expected list to have at least 1 item, got 0 items"}}
 
       iex> Z.list(Z.integer(), max_length: 3)
       iex> |> Z.parse([1, 2, 3, 4])
-      {:error, %Zodish.Issue{message: "Expected list to have at most 3 items, got 4 items"}}
+      {:error, %Zodish.Issue{message: "expected list to have at most 3 items, got 4 items"}}
 
   """
   @spec list(inner_type :: Zodish.Type.t(), opts :: [option]) :: TList.t()
@@ -405,7 +442,7 @@ defmodule Zodish do
 
       iex> Z.literal(42)
       iex> |> Z.parse(51)
-      {:error, %Zodish.Issue{message: "Expected to be 42, got 51"}}
+      {:error, %Zodish.Issue{message: "expected to be exactly 42, got 51"}}
 
   """
   @spec literal(value :: any()) :: TLiteral.t()
@@ -440,9 +477,9 @@ defmodule Zodish do
       iex> Z.map(:strict, %{name: Z.string(), age: Z.integer(gte: 18)})
       iex> |> Z.parse(%{name: "John Doe", email: "johndoe@gmail.com", age: 27})
       {:error, %Zodish.Issue{
-        message: "One or more fields failed validation",
+        message: "one or more fields failed validation",
         parse_score: 3,
-        issues: [%Zodish.Issue{path: ["email"], message: "Unknown field"}]
+        issues: [%Zodish.Issue{path: ["email"], message: "unknown field"}]
       }}
 
   If you need to validate a map where you don't know what keys will be
@@ -472,19 +509,19 @@ defmodule Zodish do
 
       iex> Z.number(gt: 0)
       iex> |> Z.parse(0)
-      {:error, %Zodish.Issue{message: "Expected a number greater than 0, got 0"}}
+      {:error, %Zodish.Issue{message: "expected a number greater than 0, got 0"}}
 
       iex> Z.number(gte: 0)
       iex> |> Z.parse(-1)
-      {:error, %Zodish.Issue{message: "Expected a number greater than or equal to 0, got -1"}}
+      {:error, %Zodish.Issue{message: "expected a number greater than or equal to 0, got -1"}}
 
       iex> Z.number(lt: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected a number less than 1, got 2"}}
+      {:error, %Zodish.Issue{message: "expected a number less than 1, got 2"}}
 
       iex> Z.number(lte: 1)
       iex> |> Z.parse(2)
-      {:error, %Zodish.Issue{message: "Expected a number less than or equal to 1, got 2"}}
+      {:error, %Zodish.Issue{message: "expected a number less than or equal to 1, got 2"}}
 
   You can use `:coerce` to cast the given value into a number before
   validation.
@@ -518,7 +555,7 @@ defmodule Zodish do
 
       iex> Z.integer()
       iex> |> Z.parse(nil)
-      {:error, %Zodish.Issue{message: "Is required"}}
+      {:error, %Zodish.Issue{message: "is required"}}
 
       iex> Z.optional(Z.integer())
       iex> |> Z.parse(nil)
@@ -550,7 +587,7 @@ defmodule Zodish do
 
       iex> Z.optional(Z.integer(), default: fn -> "abc" end)
       iex> |> Z.parse(nil)
-      {:error, %Zodish.Issue{message: "Expected an integer, got string"}}
+      {:error, %Zodish.Issue{message: "expected an integer, got string"}}
 
   """
   @spec optional(inner_type :: Zodish.Type.t(), opts :: [option]) :: TOptional.t()
@@ -574,9 +611,9 @@ defmodule Zodish do
       iex> |> Z.parse(%{foo: "bar"})
       {:error, %Zodish.Issue{
         path: [],
-        message: "One or more fields failed validation",
+        message: "one or more fields failed validation",
         parse_score: 1,
-        issues: [%Zodish.Issue{path: ["foo"], message: "Expected a string, got atom"}]
+        issues: [%Zodish.Issue{path: ["foo"], message: "expected a string, got atom"}]
       }}
 
   Although you can specify a schema for the keys, it must be a string
@@ -592,9 +629,9 @@ defmodule Zodish do
       iex> |> Z.parse(%{"foo" => ""})
       {:error, %Zodish.Issue{
         path: [],
-        message: "One or more fields failed validation",
+        message: "one or more fields failed validation",
         parse_score: 1,
-        issues: [%Zodish.Issue{path: ["foo"], message: "Expected string to have at least 1 character, got 0 characters"}],
+        issues: [%Zodish.Issue{path: ["foo"], message: "expected string to have at least 1 character, got 0 characters"}],
       }}
 
   """
@@ -619,40 +656,40 @@ defmodule Zodish do
 
       iex> Z.string(exact_length: 3)
       iex> |> Z.parse("foobar")
-      {:error, %Zodish.Issue{message: "Expected string to have exactly 3 characters, got 6 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have exactly 3 characters, got 6 characters"}}
 
       iex> Z.string(min_length: 1)
       iex> |> Z.parse("")
-      {:error, %Zodish.Issue{message: "Expected string to have at least 1 character, got 0 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have at least 1 character, got 0 characters"}}
 
       iex> Z.string(max_length: 3)
       iex> |> Z.parse("foobar")
-      {:error, %Zodish.Issue{message: "Expected string to have at most 3 characters, got 6 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have at most 3 characters, got 6 characters"}}
 
   You can also use `:trim` to trim leading and trailing whitespaces
   from the string before validation.
 
       iex> Z.string(trim: true, min_length: 1)
       iex> |> Z.parse("   ")
-      {:error, %Zodish.Issue{message: "Expected string to have at least 1 character, got 0 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have at least 1 character, got 0 characters"}}
 
   You can use `:starts_with` and `:ends_with` to check if the string
   starts with a given prefix or ends with a given suffix.
 
       iex> Z.string(starts_with: "sk_")
       iex> |> Z.parse("pk_123")
-      {:error, %Zodish.Issue{message: "Expected string to start with \"sk_\", got \"pk_123\""}}
+      {:error, %Zodish.Issue{message: "expected string to start with \"sk_\", got \"pk_123\""}}
 
       iex> Z.string(ends_with: "bar")
       iex> |> Z.parse("fizzbuzz")
-      {:error, %Zodish.Issue{message: "Expected string to end with \"bar\", got \"fizzbuzz\""}}
+      {:error, %Zodish.Issue{message: "expected string to end with \"bar\", got \"fizzbuzz\""}}
 
   You can use `:regex` to validate the string against a regular
   expression.
 
       iex> Z.string(regex: ~r/^\d+$/)
       iex> |> Z.parse("123abc")
-      {:error, %Zodish.Issue{message: "Expected string to match /^\\d+$/, got \"123abc\""}}
+      {:error, %Zodish.Issue{message: "expected string to match /^\\d+$/, got \"123abc\""}}
 
   You can use `:coerce` to cast the given value into a string before
   validation.
@@ -734,9 +771,9 @@ defmodule Zodish do
       iex>   zip: "62701"
       iex> })
       {:error, %Zodish.Issue{
-        message: "One or more fields failed validation",
+        message: "one or more fields failed validation",
         parse_score: 6,
-        issues: [%Zodish.Issue{path: ["name"], message: "Unknown field"}]
+        issues: [%Zodish.Issue{path: ["name"], message: "unknown field"}]
       }}
 
   """
@@ -755,14 +792,14 @@ defmodule Zodish do
 
       iex> Z.tuple([Z.atom(), Z.integer(), Z.string()])
       iex> |> Z.parse({:ok, "abc"})
-      {:error, %Zodish.Issue{message: "Expected a tuple of length 3, got length 2"}}
+      {:error, %Zodish.Issue{message: "expected a tuple of length 3, got length 2"}}
 
       iex> Z.tuple([Z.atom(), Z.integer()])
       iex> |> Z.parse({:ok, "abc"})
       {:error, %Zodish.Issue{
-        message: "One or more elements of the tuple did not match the expected type",
+        message: "one or more elements of the tuple did not match the expected type",
         parse_score: 1,
-        issues: [%Zodish.Issue{path: ["1"], message: "Expected an integer, got string"}],
+        issues: [%Zodish.Issue{path: ["1"], message: "expected an integer, got string"}],
       }}
 
   """
@@ -785,7 +822,7 @@ defmodule Zodish do
       iex>   Z.integer()
       iex> ])
       iex> |> Z.parse(23.45)
-      {:error, %Zodish.Issue{message: "Expected an integer, got float"}}
+      {:error, %Zodish.Issue{message: "expected an integer, got float"}}
 
   The resulting error will be from the schema which made the most
   progress parsing the value.
@@ -795,8 +832,8 @@ defmodule Zodish do
       iex>
       iex> Z.union([a, b])
       iex> |> Z.parse(%{foo: "Hello", bar: 123})
-      {:error, %Zodish.Issue{message: "One or more fields failed validation", parse_score: 3, issues: [
-        %Zodish.Issue{path: ["baz"], message: "Is required"}
+      {:error, %Zodish.Issue{message: "one or more fields failed validation", parse_score: 3, issues: [
+        %Zodish.Issue{path: ["baz"], message: "is required"}
       ]}}
 
   > #### Warning {: .warning}
@@ -872,6 +909,7 @@ defmodule Zodish do
   def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
   def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
   def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
+  def coerce(%TEnum{} = type, value), do: TEnum.coerce(type, value)
   def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
   def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)
   def coerce(%TNumber{} = type, value), do: TNumber.coerce(type, value)
@@ -884,12 +922,12 @@ defmodule Zodish do
       iex> |> Z.list(exact_length: 1)
       iex> |> Z.exact_length(2)
       iex> |> Z.parse([1])
-      {:error, %Zodish.Issue{message: "Expected list to have exactly 2 items, got 1 item"}}
+      {:error, %Zodish.Issue{message: "expected list to have exactly 2 items, got 1 item"}}
 
       iex> Z.string(exact_length: 5)
       iex> |> Z.exact_length(1)
       iex> |> Z.parse("Hello")
-      {:error, %Zodish.Issue{message: "Expected string to have exactly 1 character, got 5 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have exactly 1 character, got 5 characters"}}
 
   """
   @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
@@ -908,12 +946,12 @@ defmodule Zodish do
       iex> |> Z.list(max_length: 3)
       iex> |> Z.max_length(2)
       iex> |> Z.parse([1, 2, 3])
-      {:error, %Zodish.Issue{message: "Expected list to have at most 2 items, got 3 items"}}
+      {:error, %Zodish.Issue{message: "expected list to have at most 2 items, got 3 items"}}
 
       iex> Z.string(max_length: 3)
       iex> |> Z.max_length(1)
       iex> |> Z.parse("Foo")
-      {:error, %Zodish.Issue{message: "Expected string to have at most 1 character, got 3 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have at most 1 character, got 3 characters"}}
 
   """
   @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
@@ -935,9 +973,9 @@ defmodule Zodish do
       iex> Z.merge(a, b)
       iex> |> Z.parse(%{name: "John Doe", age: 27, email: "johndoe@gmail.com"})
       {:error, %Zodish.Issue{
-        message: "One or more fields failed validation",
+        message: "one or more fields failed validation",
         parse_score: 3,
-        issues: [%Zodish.Issue{path: ["email"], message: "Unknown field"}]
+        issues: [%Zodish.Issue{path: ["email"], message: "unknown field"}]
       }}
 
   """
@@ -956,12 +994,12 @@ defmodule Zodish do
       iex> |> Z.list(min_length: 1)
       iex> |> Z.min_length(2)
       iex> |> Z.parse([1])
-      {:error, %Zodish.Issue{message: "Expected list to have at least 2 items, got 1 item"}}
+      {:error, %Zodish.Issue{message: "expected list to have at least 2 items, got 1 item"}}
 
       iex> Z.string(min_length: 1)
       iex> |> Z.min_length(6)
       iex> |> Z.parse("Foo")
-      {:error, %Zodish.Issue{message: "Expected string to have at least 6 characters, got 3 characters"}}
+      {:error, %Zodish.Issue{message: "expected string to have at least 6 characters, got 3 characters"}}
 
   """
   @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
@@ -1053,7 +1091,7 @@ defmodule Zodish do
       iex> Z.integer()
       iex> |> Z.refine(is_even)
       iex> |> Z.parse(3)
-      {:error, %Zodish.Issue{message: "Is invalid", parse_score: 1}}
+      {:error, %Zodish.Issue{message: "is invalid", parse_score: 1}}
 
   ## Options
 
@@ -1063,9 +1101,9 @@ defmodule Zodish do
       iex> is_even = fn x -> rem(x, 2) == 0 end
       iex>
       iex> Z.integer()
-      iex> |> Z.refine(is_even, error: "Must be even")
+      iex> |> Z.refine(is_even, error: "must be even")
       iex> |> Z.parse(3)
-      {:error, %Zodish.Issue{message: "Must be even", parse_score: 1}}
+      {:error, %Zodish.Issue{message: "must be even", parse_score: 1}}
 
   """
   @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()

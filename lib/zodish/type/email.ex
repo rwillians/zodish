@@ -30,8 +30,8 @@ defimpl Zodish.Type, for: Zodish.Type.Email do
     regex = regex_for(schema.ruleset)
 
     TString.new()
-    |> TString.min_length(1, error: "Cannot be empty")
-    |> TString.regex(regex, error: "Invalid email address")
+    |> TString.min_length(1, error: "cannot be empty")
+    |> TString.regex(regex, error: "invalid email address")
     |> Zodish.Type.parse(value)
   end
 

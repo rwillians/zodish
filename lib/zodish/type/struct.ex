@@ -43,7 +43,7 @@ defimpl Zodish.Type, for: Zodish.Type.Struct do
 
   @impl Zodish.Type
   def parse(%TStruct{mod: mod} = type, %mod{} = value), do: parse(type, Map.from_struct(value))
-  def parse(%TStruct{} = type, %mod{}), do: {:error, issue("Expected a struct of type #{to_mod_name(type.mod)}, got struct of #{to_mod_name(mod)}")}
+  def parse(%TStruct{} = type, %mod{}), do: {:error, issue("expected a struct of type #{to_mod_name(type.mod)}, got struct of #{to_mod_name(mod)}")}
   def parse(%TStruct{} = type, value) do
     maptype = TMap.new(:strict, type.shape)
 

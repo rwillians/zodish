@@ -40,22 +40,22 @@ defmodule Zodish.Type.Number do
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @opts [error: "Expected a number greater than {{gt}}, got {{value}}"]
+  @opts [error: "expected a number greater than {{gt}}, got {{value}}"]
   def gt(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a number greater than or equal to {{gte}}, got {{value}}"]
+  @opts [error: "expected a number greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a number less than {{lt}}, got {{value}}"]
+  @opts [error: "expected a number less than {{lt}}, got {{value}}"]
   def lt(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "Expected a number less than or equal to {{lte}}, got {{value}}"]
+  @opts [error: "expected a number less than or equal to {{lte}}, got {{value}}"]
   def lte(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | lte: {value, merge_opts(@opts, opts)}}
@@ -83,7 +83,7 @@ defimpl Zodish.Type, for: Zodish.Type.Number do
   #   PRIVATE
   #
 
-  defp validate_required(nil), do: {:error, issue("Is required")}
+  defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
 
   defp parse_integer_string(value) do
@@ -101,12 +101,12 @@ defimpl Zodish.Type, for: Zodish.Type.Number do
   defp coerce(%{coerce: true}, <<value::binary>>) do
     with {:error, _} <- parse_integer_string(value),
          {:error, _} <- parse_float_string(value),
-         do: {:error, issue("Cannot coerce #{inspect(value)} to a number")}
+         do: {:error, issue("cannot coerce #{inspect(value)} to a number")}
   end
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_number(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a number, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a number, got #{typeof(value)}")}
 
   defp validate_gt(%{gt: nil}, _), do: :ok
   defp validate_gt(%{gt: {gt, opts}}, value) do
