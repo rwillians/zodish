@@ -102,12 +102,12 @@ defimpl Zodish.Type, for: Zodish.Type.Float do
   defp coerce(%{coerce: true}, <<value::binary>>) do
     with {:error, _} <- parse_float_string(value),
          {:error, _} <- parse_integer_string(value),
-         do: {:error, issue("Cannot coerce #{inspect(value)} to float")}
+         do: {:error, issue("cannot coerce #{inspect(value)} to float")}
   end
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_float(value), do: :ok
-  defp validate_type(value), do: {:error, issue("Expected a float, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a float, got #{typeof(value)}")}
 
   defp validate_gt(%{gt: nil}, _), do: :ok
   defp validate_gt(%{gt: {gt, opts}}, value) do

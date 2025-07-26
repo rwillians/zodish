@@ -9,6 +9,7 @@ defmodule Zodish do
   alias Zodish.Type.Boolean, as: TBoolean
   alias Zodish.Type.Date, as: TDate
   alias Zodish.Type.DateTime, as: TDateTime
+  alias Zodish.Type.Decimal, as: TDecimal
   alias Zodish.Type.Email, as: TEmail
   alias Zodish.Type.Enum, as: TEnum
   alias Zodish.Type.Float, as: TFloat
@@ -24,6 +25,10 @@ defmodule Zodish do
   alias Zodish.Type.Tuple, as: TTuple
   alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.Uuid, as: TUuid
+
+  if Code.ensure_loaded?(Decimal) do
+    alias Zodish.Type.Decimal, as: TDecimal
+  end
 
   alias Zodish.Type.Refine, as: Refine
   alias Zodish.Type.Transform, as: Transform
@@ -186,6 +191,60 @@ defmodule Zodish do
         when option: {:coerce, boolean()}
 
   defdelegate datetime(opts \\ []), to: TDateTime, as: :new
+
+    @doc ~S"""
+    Defines a decimal type.
+
+        iex> Z.decimal()
+        iex> |> Z.parse(Decimal.from_float(3.14))
+        {:ok, Decimal.new("3.14")}
+
+    ## Options
+
+    You can use `:gt`, `:gte`, `:lt` and `:lte` to constrain the allowed
+    values.
+
+        iex> Z.decimal(gt: Decimal.new("0.0"))
+        iex> |> Z.parse(Decimal.new("0.0"))
+        {:error, %Zodish.Issue{message: "expected a decimal greater than 0.0, got 0.0"}}
+
+        iex> Z.decimal(gte: Decimal.new("1.0"))
+        iex> |> Z.parse(Decimal.new("0.5"))
+        {:error, %Zodish.Issue{message: "expected a decimal greater than or equal to 1.0, got 0.5"}}
+
+        iex> Z.decimal(lt: Decimal.new("1.0"))
+        iex> |> Z.parse(Decimal.new("1.1"))
+        {:error, %Zodish.Issue{message: "expected a decimal less than 1.0, got 1.1"}}
+
+        iex> Z.decimal(lte: Decimal.new("1.0"))
+        iex> |> Z.parse(Decimal.new("1.1"))
+        {:error, %Zodish.Issue{message: "expected a decimal less than or equal to 1.0, got 1.1"}}
+
+    You can use `:coerce` to cast the given value into a decimal before
+    validation.
+
+        iex> Z.decimal(coerce: true)
+        iex> |> Z.parse("3.14")
+        {:ok, Decimal.new("3.14")}
+
+        iex> Z.decimal(coerce: true)
+        iex> |> Z.parse("123")
+        {:ok, Decimal.new("123")}
+
+    """
+    @spec decimal(opts :: [option]) :: TDateTime.t()
+          when option:
+                {:coerce, boolean()}
+                | {:gt, Decimal.t()}
+                | {:gt, Zodish.Option.t(Decimal.t())}
+                | {:gte, Decimal.t()}
+                | {:gte, Zodish.Option.t(Decimal.t())}
+                | {:lt, Decimal.t()}
+                | {:lt, Zodish.Option.t(Decimal.t())}
+                | {:lte, Decimal.t()}
+                | {:lte, Zodish.Option.t(Decimal.t())}
+
+  defdelegate decimal(opts \\ []), to: TDecimal, as: :new
 
   @doc ~S"""
   Defines an email type (decorated String type).
@@ -424,12 +483,12 @@ defmodule Zodish do
   """
   @spec list(inner_type :: Zodish.Type.t(), opts :: [option]) :: TList.t()
         when option:
-              {:exact_length, non_neg_integer()}
-              | {:exact_length, Zodish.Option.t(non_neg_integer())}
-              | {:min_length, non_neg_integer()}
-              | {:min_length, Zodish.Option.t(non_neg_integer())}
-              | {:max_length, non_neg_integer()}
-              | {:max_length, Zodish.Option.t(non_neg_integer())}
+               {:exact_length, non_neg_integer()}
+               | {:exact_length, Zodish.Option.t(non_neg_integer())}
+               | {:min_length, non_neg_integer()}
+               | {:min_length, Zodish.Option.t(non_neg_integer())}
+               | {:max_length, non_neg_integer()}
+               | {:max_length, Zodish.Option.t(non_neg_integer())}
 
   defdelegate list(inner_type, opts \\ []), to: TList, as: :new
 
@@ -895,6 +954,10 @@ defmodule Zodish do
         when type: TDate.t()
   @spec coerce(type, value :: boolean()) :: TDateTime.t()
         when type: TDateTime.t()
+  @spec coerce(type, value :: boolean()) :: TDecimal.t()
+        when type: TDecimal.t()
+  @spec coerce(type, value :: boolean()) :: TEnum.t()
+        when type: TEnum.t()
   @spec coerce(type, value :: boolean()) :: TFloat.t()
         when type: TFloat.t()
   @spec coerce(type, value :: boolean()) :: TInteger.t()
@@ -909,6 +972,7 @@ defmodule Zodish do
   def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
   def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
   def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
+  def coerce(%TDecimal{} = type, value), do: TDecimal.coerce(type, value)
   def coerce(%TEnum{} = type, value), do: TEnum.coerce(type, value)
   def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
   def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)

@@ -69,8 +69,6 @@ defimpl Zodish.Type, for: Zodish.Type.Enum do
   defp validate_required(_), do: :ok
 
   defp coerce(_, value) when is_atom(value), do: {:ok, value}
-  defp coerce(%{coerce: false}, value), do: {:ok, value}
-
   defp coerce(%{coerce: true} = type, <<value::binary>>) do
     {:ok, String.to_existing_atom(value)}
   rescue
@@ -81,7 +79,6 @@ defimpl Zodish.Type, for: Zodish.Type.Enum do
         do: {:ok, String.to_atom(value)},
         else: {:error, issue("is invalid")}
   end
-
   defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_atom(value), do: :ok
