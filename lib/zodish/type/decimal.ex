@@ -41,20 +41,48 @@ defmodule Zodish.Type.Decimal do
       do: %{type | coerce: value}
 
   @opts [error: "expected a decimal greater than {{gt}}, got {{value}}"]
-  def gt(%TDecimal{} = type, %Decimal{} = value, opts \\ []),
+  def gt(type, value, opts \\ [])
+  def gt(%TDecimal{} = type, %Decimal{} = value, opts),
     do: %{type | gt: {value, merge_opts(@opts, opts)}}
+  def gt(%TDecimal{} = type, value, opts)
+      when is_float(value),
+      do: gt(type, Decimal.from_float(value), opts)
+  def gt(%TDecimal{} = type, value, opts)
+      when is_integer(value),
+      do: gt(type, Decimal.new("#{value}"), opts)
 
   @opts [error: "expected a decimal greater than or equal to {{gte}}, got {{value}}"]
-  def gte(%TDecimal{} = type, %Decimal{} = value, opts \\ []),
+  def gte(type, value, opts \\ [])
+  def gte(%TDecimal{} = type, %Decimal{} = value, opts),
     do: %{type | gte: {value, merge_opts(@opts, opts)}}
+  def gte(%TDecimal{} = type, value, opts)
+      when is_float(value),
+      do: gte(type, Decimal.from_float(value), opts)
+  def gte(%TDecimal{} = type, value, opts)
+      when is_integer(value),
+      do: gte(type, Decimal.new("#{value}"), opts)
 
   @opts [error: "expected a decimal less than {{lt}}, got {{value}}"]
-  def lt(%TDecimal{} = type, %Decimal{} = value, opts \\ []),
+  def lt(type, value, opts \\ [])
+  def lt(%TDecimal{} = type, %Decimal{} = value, opts),
     do: %{type | lt: {value, merge_opts(@opts, opts)}}
+  def lt(%TDecimal{} = type, value, opts)
+      when is_float(value),
+      do: lt(type, Decimal.from_float(value), opts)
+  def lt(%TDecimal{} = type, value, opts)
+      when is_integer(value),
+      do: lt(type, Decimal.new("#{value}"), opts)
 
   @opts [error: "expected a decimal less than or equal to {{lte}}, got {{value}}"]
-  def lte(%TDecimal{} = type, %Decimal{} = value, opts \\ []),
+  def lte(type, value, opts \\ [])
+  def lte(%TDecimal{} = type, %Decimal{} = value, opts),
     do: %{type | lte: {value, merge_opts(@opts, opts)}}
+  def lte(%TDecimal{} = type, value, opts)
+      when is_float(value),
+      do: lte(type, Decimal.from_float(value), opts)
+  def lte(%TDecimal{} = type, value, opts)
+      when is_integer(value),
+      do: lte(type, Decimal.new("#{value}"), opts)
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Decimal do
@@ -83,7 +111,8 @@ defimpl Zodish.Type, for: Zodish.Type.Decimal do
   defp validate_required(_), do: :ok
 
   defp coerce(_, %Decimal{} = value), do: {:ok, value}
-  defp coerce(%{coerce: true}, value) when is_integer(value), do: {:ok, value / 1.0}
+  defp coerce(%{coerce: true}, value) when is_float(value), do: {:ok, Decimal.from_float(value)}
+  defp coerce(%{coerce: true}, value) when is_integer(value), do: {:ok, Decimal.new("#{value}")}
   defp coerce(%{coerce: true}, <<value::binary>>) do
     case Decimal.parse(value) do
       {%Decimal{} = decimal, ""} -> {:ok, decimal}
