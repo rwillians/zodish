@@ -4,6 +4,7 @@ defmodule Zodish do
   JavaScript's Zod.
   """
 
+  # primitive types
   alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.Atom, as: TAtom
   alias Zodish.Type.Boolean, as: TBoolean
@@ -26,6 +27,7 @@ defmodule Zodish do
   alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.Uuid, as: TUuid
 
+  # effect types
   alias Zodish.Type.Refine, as: Refine
   alias Zodish.Type.Transform, as: Transform
 
@@ -944,23 +946,23 @@ defmodule Zodish do
   """
   @spec coerce(type, value :: boolean() | :unsafe) :: TAtom.t()
         when type: TAtom.t()
-  @spec coerce(type, value :: boolean()) :: TBoolean.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TBoolean.t()
-  @spec coerce(type, value :: boolean()) :: TDate.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TDate.t()
-  @spec coerce(type, value :: boolean()) :: TDateTime.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TDateTime.t()
-  @spec coerce(type, value :: boolean()) :: TDecimal.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TDecimal.t()
-  @spec coerce(type, value :: boolean()) :: TEnum.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TEnum.t()
-  @spec coerce(type, value :: boolean()) :: TFloat.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TFloat.t()
-  @spec coerce(type, value :: boolean()) :: TInteger.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TInteger.t()
-  @spec coerce(type, value :: boolean()) :: TNumber.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TNumber.t()
-  @spec coerce(type, value :: boolean()) :: TString.t()
+  @spec coerce(type, value :: boolean()) :: type
         when type: TString.t()
 
   def coerce(type, value \\ true)
