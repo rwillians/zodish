@@ -26,10 +26,6 @@ defmodule Zodish do
   alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.Uuid, as: TUuid
 
-  if Code.ensure_loaded?(Decimal) do
-    alias Zodish.Type.Decimal, as: TDecimal
-  end
-
   alias Zodish.Type.Refine, as: Refine
   alias Zodish.Type.Transform, as: Transform
 
