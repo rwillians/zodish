@@ -1,4 +1,6 @@
 defmodule Zodish.Type.Map do
+  import Zodish.Helpers, only: [take_sorted: 2]
+
   alias __MODULE__, as: TMap
 
   @type shape() :: %{
@@ -6,21 +8,47 @@ defmodule Zodish.Type.Map do
         }
 
   @type t() :: %TMap{
+          coerce: boolean(),
           mode: :strip | :strict,
           shape: shape()
         }
 
-  defstruct mode: :strip,
+  defstruct coerce: false,
+            mode: :strip,
             shape: %{}
 
-  def new(mode \\ :strip, shape)
-  def new(_, %{} = shape) when map_size(shape) == 0, do: raise(ArgumentError, "Shape cannot be empty")
-  def new(:strip, %{} = shape), do: strip(%TMap{shape: shape})
-  def new(:strict, %{} = shape), do: strict(%TMap{shape: shape})
+  @doc false
+  def new([{_, _} | _] = opts) do
+    Enum.reduce(opts, %TMap{}, fn
+      {:coerce, value}, type -> coerce(type, value)
+      {:mode, :strip}, type -> strip(type)
+      {:mode, :strict}, type -> strict(type)
+      {:shape, shape}, type -> shape(type, shape)
+      {key, _}, _ -> raise(ArgumentError, "Unknown option #{inspect(key)} for Zodish.Type.String")
+    end)
+  end
+  def new(%{} = shape), do: new(mode: :strip, shape: shape)
 
+  @doc false
+  def new(:strip, %{} = shape), do: new(mode: :strip, shape: shape)
+  def new(:strict, %{} = shape), do: new(mode: :strict, shape: shape)
+  def new([{_, _} | _] = opts, %{} = shape), do: new(opts ++ [shape: shape])
+
+  @doc false
+  def coerce(%TMap{} = type, value \\ true)
+      when is_boolean(value),
+      do: %{type | coerce: value}
+
+  @doc false
   def strip(%TMap{} = type), do: %{type | mode: :strip}
 
+  @doc false
   def strict(%TMap{} = type), do: %{type | mode: :strict}
+
+  @doc false
+  def shape(%TMap{} = type, %{} = shape)
+      when is_non_struct_map(shape) and map_size(shape) > 0,
+      do: %{type | shape: shape}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Map do
@@ -33,6 +61,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
   @impl Zodish.Type
   def parse(%TMap{} = schema, value) do
     with :ok <- validate_required(value),
+         {:ok, value} <- coerce(schema, value),
          :ok <- validate_type(value),
          do: parse_value(schema, value)
   end
@@ -43,6 +72,12 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
 
   defp validate_required(nil), do: {:error, issue("is required")}
   defp validate_required(_), do: :ok
+
+  defp coerce(%TMap{coerce: false}, value), do: {:ok, value}
+  defp coerce(%TMap{coerce: true}, %_{} = value), do: {:ok, Map.drop(Map.from_struct(value), [:__meta__])}
+  defp coerce(%TMap{coerce: true}, %{} = value), do: value
+  defp coerce(%TMap{coerce: true}, [{_, _} | _] = value), do: {:ok, Enum.into(value, %{})}
+  defp coerce(_, value), do: {:ok, value}
 
   defp validate_type(value) when is_non_struct_map(value), do: :ok
   defp validate_type(value), do: {:error, issue("expected a map, got #{typeof(value)}")}

@@ -10,6 +10,7 @@ defmodule Zodish.Type.Transform do
   defstruct inner_type: nil,
             fun: nil
 
+  @doc false
   def new(%_{} = inner_type, fun)
       when is_function(fun, 1),
       do: %Transform{inner_type: inner_type, fun: fun}

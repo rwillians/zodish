@@ -21,6 +21,7 @@ defmodule Zodish.Type.Float do
             lt: nil,
             lte: nil
 
+  @doc false
   def new(opts \\ []) do
     Enum.reduce(opts, %TFloat{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -36,25 +37,30 @@ defmodule Zodish.Type.Float do
     end)
   end
 
+  @doc false
   def coerce(%TFloat{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
+  @doc false
   @opts [error: "expected a float greater than {{gt}}, got {{value}}"]
   def gt(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected a float greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected a float less than {{lt}}, got {{value}}"]
   def lt(%TFloat{} = type, value, opts \\ [])
       when is_float(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected a float less than or equal to {{lte}}, got {{value}}"]
   def lte(%TFloat{} = type, value, opts \\ [])
       when is_float(value),

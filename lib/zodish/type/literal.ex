@@ -12,6 +12,7 @@ defmodule Zodish.Type.Literal do
 
   defstruct value: nil
 
+  @doc false
   def new(nil), do: raise(ArgumentError, "Literal type cannot be nil, use `Z.optional/1` instead")
   def new(value), do: %TLiteral{value: value}
 end

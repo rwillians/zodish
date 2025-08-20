@@ -11,6 +11,7 @@ defmodule Zodish.Type.Date do
 
   defstruct coerce: false
 
+  @doc false
   def new(opts \\ []) do
     Enum.reduce(opts, %TDate{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -18,6 +19,7 @@ defmodule Zodish.Type.Date do
     end)
   end
 
+  @doc false
   def coerce(%TDate{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}

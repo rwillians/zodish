@@ -5,6 +5,7 @@ defmodule Zodish.Option do
   default options with user-defined options.
   """
 
+  @typedoc false
   @type t(inner_type) ::
           {inner_type,
            %{

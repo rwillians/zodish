@@ -13,6 +13,7 @@ defmodule Zodish.Type.Enum do
   defstruct coerce: false,
             values: []
 
+  @doc false
   def new([{_, _} | _] =opts) do
     Enum.reduce(opts, %TEnum{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -25,10 +26,12 @@ defmodule Zodish.Type.Enum do
       when is_atom(head),
       do: new(values: values)
 
+  @doc false
   def coerce(%TEnum{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
+  @doc false
   def values(%TEnum{} = type, [_ | _] = values), do: set_values(type, values)
 
   #

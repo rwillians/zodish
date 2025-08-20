@@ -8,8 +8,11 @@ defmodule Zodish.Type.Union do
 
   defstruct inner_types: []
 
+  @doc false
   def new([%_{}, %_{} | _] = inner_types), do: %TUnion{inner_types: inner_types}
-  def new(inner_types) when is_list(inner_types), do: raise(ArgumentError, "Union type must be a list of at least two types")
+  def new(inner_types)
+      when is_list(inner_types),
+      do: raise(ArgumentError, "Union type must be a list of at least two types")
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Union do

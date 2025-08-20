@@ -31,6 +31,7 @@ defmodule Zodish.Type.String do
             ends_with: nil,
             regex: nil
 
+  @doc false
   def new(opts \\ []) do
     Enum.reduce(opts, %TString{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -53,47 +54,57 @@ defmodule Zodish.Type.String do
     end)
   end
 
+  @doc false
   def coerce(%TString{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
+  @doc false
   def trim(%TString{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | trim: value}
 
+  @doc false
   def downcase(%TString{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | downcase: value}
 
+  @doc false
   def upcase(%TString{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | upcase: value}
 
+  @doc false
   @opts [error: "expected string to have exactly {{exact_length | character}}, got {{actual_length | character}}"]
   def exact_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected string to have at least {{min_length | character}}, got {{actual_length | character}}"]
   def min_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | min_length: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected string to have at most {{max_length | character}}, got {{actual_length | character}}"]
   def max_length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | max_length: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected string to start with \"{{prefix}}\", got \"{{value}}\""]
   def starts_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | starts_with: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected string to end with \"{{suffix}}\", got \"{{value}}\""]
   def ends_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | ends_with: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected string to match {{pattern}}, got \"{{value}}\""]
   def regex(%TString{} = type, %Regex{} = value, opts \\ []),
     do: %{type | regex: {value, merge_opts(@opts, opts)}}

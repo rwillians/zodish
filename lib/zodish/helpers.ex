@@ -46,6 +46,31 @@ defmodule Zodish.Helpers do
   def pluralize(count, <<word::binary>>) when is_integer(count) and count >= 0, do: pluralize(word)
 
   @doc ~S"""
+  Same as `Keyword.take/2` but the keys are sorted in the same order
+  you provided them.
+
+      iex> value =[foo: 1, bar: 2, baz: 3]
+      iex> Zodish.Helpers.take_sorted(value, [:bar, :baz, :foo])
+      [bar: 2, baz: 3, foo: 1]
+
+  """
+  def take_sorted([], _), do: []
+  def take_sorted(_, []), do: []
+
+  def take_sorted([{_, _} | _] = keyword, [_ | _] = keys)do
+    keys
+    |> Enum.reduce([], &fetch_prepend(keyword, &1, &2))
+    |> :lists.reverse()
+  end
+
+  defp fetch_prepend(keyword, key, acc) do
+    case Keyword.fetch(keyword, key) do
+      {:ok, value} -> [{key, value} | acc]
+      :error -> acc
+    end
+  end
+
+  @doc ~S"""
   Returns the name of the given module without the "Elixir." prefix.
 
       iex> to_string(Zodish.Type.Map)

@@ -45,11 +45,6 @@ defmodule Zodish do
 
   defdelegate parse(type, value), to: Zodish.Type
 
-  #
-  #   CORE TYPES
-  #   Keep them sorted alphabetically!
-  #
-
   @doc ~S"""
   Defines a type that accepts any value.
 
@@ -147,6 +142,50 @@ defmodule Zodish do
         when option: {:coerce, boolean()}
 
   defdelegate boolean(opts \\ []), to: TBoolean, as: :new
+
+  @doc ~S"""
+  Enables coercion for the given type.
+
+      iex> Z.integer()
+      iex> |> Z.coerce()
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
+  """
+  @spec coerce(type, value :: boolean() | :unsafe) :: TAtom.t()
+        when type: TAtom.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TBoolean.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TDate.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TDateTime.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TDecimal.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TEnum.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TFloat.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TInteger.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TNumber.t()
+  @spec coerce(type, value :: boolean()) :: type
+        when type: TString.t()
+
+  def coerce(type, value \\ true)
+  def coerce(%TAtom{} = type, value), do: TAtom.coerce(type, value)
+  def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
+  def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
+  def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
+  def coerce(%TDecimal{} = type, value), do: TDecimal.coerce(type, value)
+  def coerce(%TEnum{} = type, value), do: TEnum.coerce(type, value)
+  def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
+  def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)
+  def coerce(%TMap{} = type, value), do: TMap.coerce(type, value)
+  def coerce(%TNumber{} = type, value), do: TNumber.coerce(type, value)
+  def coerce(%TString{} = type, value), do: TString.coerce(type, value)
+  def coerce(%TStruct{} = type, value), do: TStruct.coerce(type, value)
 
   @doc ~S"""
   Defines a date type.
@@ -331,6 +370,30 @@ defmodule Zodish do
         when option: {:coerce, boolean()} | {:values, [atom(), ...]}
 
   defdelegate enum(opts), to: TEnum, as: :new
+
+  @doc ~S"""
+  Updates the given type's `:exact_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(exact_length: 1)
+      iex> |> Z.exact_length(2)
+      iex> |> Z.parse([1])
+      {:error, %Zodish.Issue{message: "expected list to have exactly 2 items, got 1 item"}}
+
+      iex> Z.string(exact_length: 5)
+      iex> |> Z.exact_length(1)
+      iex> |> Z.parse("Hello")
+      {:error, %Zodish.Issue{message: "expected string to have exactly 1 character, got 5 characters"}}
+
+  """
+  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def exact_length(type, length, opts \\ [])
+  def exact_length(%TList{} = type, length, opts), do: TList.exact_length(type, length, opts)
+  def exact_length(%TString{} = type, length, opts), do: TString.exact_length(type, length, opts)
 
   @doc ~S"""
   Defines a float type.
@@ -539,14 +602,128 @@ defmodule Zodish do
         issues: [%Zodish.Issue{path: ["email"], message: "unknown field"}]
       }}
 
+  You can also use :coerce to cast values from struct or keyword lists
+  to maps before validation:
+
+      iex> Z.coerce(Z.map(:strip, %{name: Z.string(), age: Z.integer(gte: 18)}))
+      iex> |> Z.parse(name: "John Doe", email: "johndoe@gmail.com", age: 27)
+      {:ok, %{name: "John Doe", age: 27}}
+
   If you need to validate a map where you don't know what keys will be
   present, then use `Z.record/1` instead.
   """
   @spec map(mode, shape) :: TMap.t()
         when mode: :strip | :strict,
              shape: %{required(atom()) => Zodish.Type.t()}
+  @spec map([option, ...], shape) :: TMap.t()
+        when option: {:coerce, boolean()} | {:mode, :strip | :strict},
+             shape: %{required(atom()) => Zodish.Type.t()}
 
-  defdelegate map(mode \\ :strip, shape), to: TMap, as: :new
+  defdelegate map(mode_or_opts \\ :strip, shape), to: TMap, as: :new
+
+  @doc ~S"""
+  Updates the given type's `:max_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(max_length: 3)
+      iex> |> Z.max_length(2)
+      iex> |> Z.parse([1, 2, 3])
+      {:error, %Zodish.Issue{message: "expected list to have at most 2 items, got 3 items"}}
+
+      iex> Z.string(max_length: 3)
+      iex> |> Z.max_length(1)
+      iex> |> Z.parse("Foo")
+      {:error, %Zodish.Issue{message: "expected string to have at most 1 character, got 3 characters"}}
+
+  """
+  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def max_length(type, length, opts \\ [])
+  def max_length(%TList{} = type, length, opts), do: TList.max_length(type, length, opts)
+  def max_length(%TString{} = type, length, opts), do: TString.max_length(type, length, opts)
+
+  @doc ~S"""
+  Merges two Map types into one, where `:mode` is inherited from the
+  most strict mode between the two given types.
+
+      iex> a = Z.map(:strip, %{name: Z.string()})
+      iex> b = Z.map(:strict, %{age: Z.integer()})
+      iex>
+      iex> Z.merge(a, b)
+      iex> |> Z.parse(%{name: "John Doe", age: 27, email: "johndoe@gmail.com"})
+      {:error, %Zodish.Issue{
+        message: "one or more fields failed validation",
+        parse_score: 3,
+        issues: [%Zodish.Issue{path: ["email"], message: "unknown field"}]
+      }}
+
+      iex> a = Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string()
+      iex> })
+      iex>
+      iex> b = Z.struct(Address, %{
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex>
+      iex> Z.merge(a, b)
+      iex> |> Z.parse(%{
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        line_1: "123 Main St",
+        line_2: "Apt 4B",
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  """
+  @spec merge(a :: TMap.t(), b :: TMap.t()) :: TMap.t()
+  @spec merge(a :: TStruct.t(), b :: TStruct.t()) :: TStruct.t()
+
+  def merge(%TMap{} = a, %TMap{} = b), do: TMap.new(most_strict(a.mode, b.mode), Map.merge(a.shape, b.shape))
+  def merge(%TStruct{module: same} = a, %TStruct{module: same} = b) do
+    []
+    |> Keyword.put(:coerce, a.coerce or b.coerce)
+    |> Keyword.put(:mode, most_strict(a.mode, b.mode))
+    |> Keyword.put(:module, same)
+    |> Keyword.put(:shape, Map.merge(a.shape, b.shape))
+    |> TStruct.new()
+  end
+
+  @doc ~S"""
+  Updates the given type's `:min_length` option.
+
+      iex> Z.integer()
+      iex> |> Z.list(min_length: 1)
+      iex> |> Z.min_length(2)
+      iex> |> Z.parse([1])
+      {:error, %Zodish.Issue{message: "expected list to have at least 2 items, got 1 item"}}
+
+      iex> Z.string(min_length: 1)
+      iex> |> Z.min_length(6)
+      iex> |> Z.parse("Foo")
+      {:error, %Zodish.Issue{message: "expected string to have at least 6 characters, got 3 characters"}}
+
+  """
+  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+        when type: TList.t()
+  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+        when type: TString.t()
+
+  def min_length(type, length, opts \\ [])
+  def min_length(%TList{} = type, length, opts), do: TList.min_length(type, length, opts)
+  def min_length(%TString{} = type, length, opts), do: TString.min_length(type, length, opts)
 
   @doc ~S"""
   Defines a number type.
@@ -607,6 +784,42 @@ defmodule Zodish do
   defdelegate number(opts \\ []), to: TNumber, as: :new
 
   @doc ~S"""
+  Removes the specified keys from the type's shape.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer()})
+      iex> |> Z.omit([:age])
+      iex> |> Z.parse(%{name: "John Doe"})
+      {:ok, %{name: "John Doe"}}
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.omit([:line_1, :line_2])
+      iex> |> Z.parse(%{
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  """
+  @spec omit(type, keys :: [atom()]) :: TMap.t()
+        when type: TMap.t()
+  @spec omit(type, keys :: [atom()]) :: TStruct.t()
+        when type: TStruct.t()
+
+  def omit(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
+  def omit(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
+
+  @doc ~S"""
   Makes a given inner type optional, where you can also define a
   default value to be used when the actual value resolves to `nil`.
 
@@ -651,6 +864,42 @@ defmodule Zodish do
         when option: {:default, (-> any()) | any() | nil}
 
   defdelegate optional(inner_type, opts \\ []), to: TOptional, as: :new
+
+  @doc ~S"""
+  Keeps only the specified keys from the type's shape.
+
+      iex> Z.map(%{name: Z.string(), age: Z.integer()})
+      iex> |> Z.pick([:name])
+      iex> |> Z.parse(%{name: "John Doe"})
+      {:ok, %{name: "John Doe"}}
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.pick([:city, :state, :zip])
+      iex> |> Z.parse(%{
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  """
+  @spec pick(type, keys :: [atom()]) :: TMap.t()
+        when type: TMap.t()
+  @spec pick(type, keys :: [atom()]) :: TStruct.t()
+        when type: TStruct.t()
+
+  def pick(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
+  def pick(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
 
   @doc ~S"""
   Defines a record type.
@@ -698,6 +947,69 @@ defmodule Zodish do
                | {:values, Zodish.Type.t()}
 
   defdelegate record(opts \\ []), to: TRecord, as: :new
+
+  @doc ~S"""
+  Refines a value with a custom validation.
+
+      iex> is_even = fn x -> rem(x, 2) == 0 end
+      iex>
+      iex> Z.integer()
+      iex> |> Z.refine(is_even)
+      iex> |> Z.parse(3)
+      {:error, %Zodish.Issue{message: "is invalid", parse_score: 1}}
+
+  ## Options
+
+  You can use the options `:error` to set a custom error message that
+  will be used when the validation fails.
+
+      iex> is_even = fn x -> rem(x, 2) == 0 end
+      iex>
+      iex> Z.integer()
+      iex> |> Z.refine(is_even, error: "must be even")
+      iex> |> Z.parse(3)
+      {:error, %Zodish.Issue{message: "must be even", parse_score: 1}}
+
+  """
+  @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()
+        when inner_type: Zodish.Type.t(),
+             fun: Refine.refine_fun(),
+             option: {:error, String.t()}
+
+  defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new
+
+  @doc ~S"""
+  Switches the mode of the given schema to :strict, where additional
+  fields are not allowed.
+
+      iex> Z.strict(Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> }))
+      iex> |> Z.parse(%{
+      iex>   name: "John Doe",
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:error, %Zodish.Issue{
+        message: "one or more fields failed validation",
+        parse_score: 6,
+        issues: [%Zodish.Issue{path: ["name"], message: "unknown field"}]
+      }}
+
+  Worth noting that :strict is the default mode for `Z.struct/2`.
+  """
+  @spec strict(Zodish.Type.Map.t()) :: Zodish.Type.Map.t()
+  @spec strict(Zodish.Type.Struct.t()) :: Zodish.Type.Struct.t()
+
+  def strict(%TMap{} = type), do: TMap.strict(type)
+  def strict(%TStruct{} = type), do: TStruct.strict(type)
 
   @doc ~S"""
   Defines a string type.
@@ -778,6 +1090,41 @@ defmodule Zodish do
   defdelegate string(opts \\ []), to: TString, as: :new
 
   @doc ~S"""
+  Switches the mode of the given schema to :strip, where additional
+  fields are ignored.
+
+      iex> Z.strip(Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> }))
+      iex> |> Z.parse(%{
+      iex>   name: "John Doe",
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        line_1: "123 Main St",
+        line_2: "Apt 4B",
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  Worth noting that :strip is the default mode for `Z.map/1`.
+  """
+  @spec strip(Zodish.Type.Map.t()) :: Zodish.Type.Map.t()
+  @spec strip(Zodish.Type.Struct.t()) :: Zodish.Type.Struct.t()
+
+  def strip(%TMap{} = type), do: TMap.strip(type)
+  def strip(%TStruct{} = type), do: TStruct.strip(type)
+
+  @doc ~S"""
   Defines a struct type.
 
       iex> Z.struct(Address, %{
@@ -833,12 +1180,85 @@ defmodule Zodish do
         issues: [%Zodish.Issue{path: ["name"], message: "unknown field"}]
       }}
 
+  In `Zodish.struct/2` the schema is :strict by default, meaning that
+  additional fields are not allowed. If you want it to behave as
+  :strip, like it's available to `Zodish.map/2`, you can use on of the
+  following options:
+
+  **Option 1**:
+
+      iex> Z.struct([module: Address, mode: :strip], %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> })
+      iex> |> Z.parse(%{
+      iex>   name: "John Doe",
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        line_1: "123 Main St",
+        line_2: "Apt 4B",
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
+  **Option 2**:
+
+      iex> Z.strip(Z.struct(Address, %{
+      iex>   line_1: Z.string(),
+      iex>   line_2: Z.string(),
+      iex>   city: Z.string(),
+      iex>   state: Z.string(),
+      iex>   zip: Z.string(),
+      iex> }))
+      iex> |> Z.parse(%{
+      iex>   name: "John Doe",
+      iex>   line_1: "123 Main St",
+      iex>   line_2: "Apt 4B",
+      iex>   city: "Springfield",
+      iex>   state: "IL",
+      iex>   zip: "62701"
+      iex> })
+      {:ok, %Address{
+        line_1: "123 Main St",
+        line_2: "Apt 4B",
+        city: "Springfield",
+        state: "IL",
+        zip: "62701"
+      }}
+
   """
   @spec struct(mod, shape) :: TStruct.t()
         when mod: module,
              shape: %{required(atom()) => Zodish.Type.t()}
+  @spec struct([option, ...], shape) :: TStruct.t()
+        when option: {:module, module} | {:mode, :strict | :strip},
+             shape: %{required(atom()) => Zodish.Type.t()}
 
-  defdelegate struct(mod, shape), to: TStruct, as: :new
+  defdelegate struct(mod_or_opts, shape), to: TStruct, as: :new
+
+  @doc ~S"""
+  Transforms the parsed value using a given function.
+
+      iex> Z.integer()
+      iex> |> Z.transform(fn x -> x * 2 end)
+      iex> |> Z.parse(3)
+      {:ok, 6}
+
+  """
+  @spec transform(inner_type, fun) :: Transform.t()
+        when inner_type: Zodish.Type.t(),
+             fun: (any() -> any())
+
+  defdelegate transform(inner_type, fun), to: Transform, as: :new
 
   @doc ~S"""
   Defines a tuple type.
@@ -931,262 +1351,10 @@ defmodule Zodish do
   defdelegate uuid(version \\ :any), to: TUuid, as: :new
 
   #
-  #   COMBINATORS API
-  #   Keep them sorted alphabetically!
+  #   PRIVATE
   #
-
-  @doc ~S"""
-  Enables coercion for the given type.
-
-      iex> Z.integer()
-      iex> |> Z.coerce()
-      iex> |> Z.parse("123")
-      {:ok, 123}
-
-  """
-  @spec coerce(type, value :: boolean() | :unsafe) :: TAtom.t()
-        when type: TAtom.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TBoolean.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDate.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDateTime.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDecimal.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TEnum.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TFloat.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TInteger.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TNumber.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TString.t()
-
-  def coerce(type, value \\ true)
-  def coerce(%TAtom{} = type, value), do: TAtom.coerce(type, value)
-  def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
-  def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
-  def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
-  def coerce(%TDecimal{} = type, value), do: TDecimal.coerce(type, value)
-  def coerce(%TEnum{} = type, value), do: TEnum.coerce(type, value)
-  def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
-  def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)
-  def coerce(%TNumber{} = type, value), do: TNumber.coerce(type, value)
-  def coerce(%TString{} = type, value), do: TString.coerce(type, value)
-
-  @doc ~S"""
-  Updates the given type's `:exact_length` option.
-
-      iex> Z.integer()
-      iex> |> Z.list(exact_length: 1)
-      iex> |> Z.exact_length(2)
-      iex> |> Z.parse([1])
-      {:error, %Zodish.Issue{message: "expected list to have exactly 2 items, got 1 item"}}
-
-      iex> Z.string(exact_length: 5)
-      iex> |> Z.exact_length(1)
-      iex> |> Z.parse("Hello")
-      {:error, %Zodish.Issue{message: "expected string to have exactly 1 character, got 5 characters"}}
-
-  """
-  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
-        when type: TList.t()
-  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
-        when type: TString.t()
-
-  def exact_length(type, length, opts \\ [])
-  def exact_length(%TList{} = type, length, opts), do: TList.exact_length(type, length, opts)
-  def exact_length(%TString{} = type, length, opts), do: TString.exact_length(type, length, opts)
-
-  @doc ~S"""
-  Updates the given type's `:max_length` option.
-
-      iex> Z.integer()
-      iex> |> Z.list(max_length: 3)
-      iex> |> Z.max_length(2)
-      iex> |> Z.parse([1, 2, 3])
-      {:error, %Zodish.Issue{message: "expected list to have at most 2 items, got 3 items"}}
-
-      iex> Z.string(max_length: 3)
-      iex> |> Z.max_length(1)
-      iex> |> Z.parse("Foo")
-      {:error, %Zodish.Issue{message: "expected string to have at most 1 character, got 3 characters"}}
-
-  """
-  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
-        when type: TList.t()
-  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
-        when type: TString.t()
-
-  def max_length(type, length, opts \\ [])
-  def max_length(%TList{} = type, length, opts), do: TList.max_length(type, length, opts)
-  def max_length(%TString{} = type, length, opts), do: TString.max_length(type, length, opts)
-
-  @doc ~S"""
-  Merges two Map types into one, where `:mode` is inherited from the
-  most strict mode between the two given types.
-
-      iex> a = Z.map(:strip, %{name: Z.string()})
-      iex> b = Z.map(:strict, %{age: Z.integer()})
-      iex>
-      iex> Z.merge(a, b)
-      iex> |> Z.parse(%{name: "John Doe", age: 27, email: "johndoe@gmail.com"})
-      {:error, %Zodish.Issue{
-        message: "one or more fields failed validation",
-        parse_score: 3,
-        issues: [%Zodish.Issue{path: ["email"], message: "unknown field"}]
-      }}
-
-  """
-  @spec merge(a :: TMap.t(), b :: TMap.t()) :: TMap.t()
-
-  def merge(%TMap{} = a, %TMap{} = b), do: TMap.new(most_strict(a.mode, b.mode), Map.merge(a.shape, b.shape))
 
   defp most_strict(:strict, _), do: :strict
   defp most_strict(_, :strict), do: :strict
   defp most_strict(:strip, :strip), do: :strip
-
-  @doc ~S"""
-  Updates the given type's `:min_length` option.
-
-      iex> Z.integer()
-      iex> |> Z.list(min_length: 1)
-      iex> |> Z.min_length(2)
-      iex> |> Z.parse([1])
-      {:error, %Zodish.Issue{message: "expected list to have at least 2 items, got 1 item"}}
-
-      iex> Z.string(min_length: 1)
-      iex> |> Z.min_length(6)
-      iex> |> Z.parse("Foo")
-      {:error, %Zodish.Issue{message: "expected string to have at least 6 characters, got 3 characters"}}
-
-  """
-  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
-        when type: TList.t()
-  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
-        when type: TString.t()
-
-  def min_length(type, length, opts \\ [])
-  def min_length(%TList{} = type, length, opts), do: TList.min_length(type, length, opts)
-  def min_length(%TString{} = type, length, opts), do: TString.min_length(type, length, opts)
-
-  @doc ~S"""
-  Removes the specified keys from the type's shape.
-
-      iex> Z.map(%{name: Z.string(), age: Z.integer()})
-      iex> |> Z.omit([:age])
-      iex> |> Z.parse(%{name: "John Doe"})
-      {:ok, %{name: "John Doe"}}
-
-      iex> Z.struct(Address, %{
-      iex>   line_1: Z.string(),
-      iex>   line_2: Z.string(),
-      iex>   city: Z.string(),
-      iex>   state: Z.string(),
-      iex>   zip: Z.string(),
-      iex> })
-      iex> |> Z.omit([:line_1, :line_2])
-      iex> |> Z.parse(%{
-      iex>   city: "Springfield",
-      iex>   state: "IL",
-      iex>   zip: "62701"
-      iex> })
-      {:ok, %Address{
-        city: "Springfield",
-        state: "IL",
-        zip: "62701"
-      }}
-
-  """
-  @spec omit(type, keys :: [atom()]) :: TMap.t()
-        when type: TMap.t()
-  @spec omit(type, keys :: [atom()]) :: TStruct.t()
-        when type: TStruct.t()
-
-  def omit(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
-  def omit(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.drop(type.shape, keys)}
-
-  @doc ~S"""
-  Keeps only the specified keys from the type's shape.
-
-      iex> Z.map(%{name: Z.string(), age: Z.integer()})
-      iex> |> Z.pick([:name])
-      iex> |> Z.parse(%{name: "John Doe"})
-      {:ok, %{name: "John Doe"}}
-
-      iex> Z.struct(Address, %{
-      iex>   line_1: Z.string(),
-      iex>   line_2: Z.string(),
-      iex>   city: Z.string(),
-      iex>   state: Z.string(),
-      iex>   zip: Z.string(),
-      iex> })
-      iex> |> Z.pick([:city, :state, :zip])
-      iex> |> Z.parse(%{
-      iex>   city: "Springfield",
-      iex>   state: "IL",
-      iex>   zip: "62701"
-      iex> })
-      {:ok, %Address{
-        city: "Springfield",
-        state: "IL",
-        zip: "62701"
-      }}
-
-  """
-  @spec pick(type, keys :: [atom()]) :: TMap.t()
-        when type: TMap.t()
-  @spec pick(type, keys :: [atom()]) :: TStruct.t()
-        when type: TStruct.t()
-
-  def pick(%TMap{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
-  def pick(%TStruct{} = type, keys) when is_list(keys), do: %{type | shape: Map.take(type.shape, keys)}
-
-  @doc ~S"""
-  Refines a value with a custom validation.
-
-      iex> is_even = fn x -> rem(x, 2) == 0 end
-      iex>
-      iex> Z.integer()
-      iex> |> Z.refine(is_even)
-      iex> |> Z.parse(3)
-      {:error, %Zodish.Issue{message: "is invalid", parse_score: 1}}
-
-  ## Options
-
-  You can use the options `:error` to set a custom error message that
-  will be used when the validation fails.
-
-      iex> is_even = fn x -> rem(x, 2) == 0 end
-      iex>
-      iex> Z.integer()
-      iex> |> Z.refine(is_even, error: "must be even")
-      iex> |> Z.parse(3)
-      {:error, %Zodish.Issue{message: "must be even", parse_score: 1}}
-
-  """
-  @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()
-        when inner_type: Zodish.Type.t(),
-             fun: Refine.refine_fun(),
-             option: {:error, String.t()}
-
-  defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new
-
-  @doc ~S"""
-  Transforms the parsed value using a given function.
-
-      iex> Z.integer()
-      iex> |> Z.transform(fn x -> x * 2 end)
-      iex> |> Z.parse(3)
-      {:ok, 6}
-
-  """
-  @spec transform(inner_type, fun) :: Transform.t()
-        when inner_type: Zodish.Type.t(),
-             fun: (any() -> any())
-
-  defdelegate transform(inner_type, fun), to: Transform, as: :new
 end

@@ -11,6 +11,7 @@ defmodule Zodish.Type.Tuple do
 
   defstruct elements: []
 
+  @doc false
   def new([_, _ | _] = elements), do: %TTuple{elements: elements}
 
   def new(elements)

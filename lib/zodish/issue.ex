@@ -8,8 +8,10 @@ defmodule Zodish.Issue do
 
   alias __MODULE__, as: Issue
 
+  @typedoc false
   @type segment() :: atom() | non_neg_integer() | String.t()
 
+  @typedoc false
   @type t() :: %Issue{
           path: [String.t()],
           message: String.t(),

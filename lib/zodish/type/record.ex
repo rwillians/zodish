@@ -11,10 +11,7 @@ defmodule Zodish.Type.Record do
   defstruct keys_schema: nil,
             values_schema: nil
 
-  @doc ~S"""
-  """
-  @spec new(opts :: keyword()) :: t()
-
+  @doc false
   def new(opts \\ []) do
     type = %TRecord{
       keys_schema: TString.new(min_length: 1),
@@ -28,14 +25,12 @@ defmodule Zodish.Type.Record do
     end)
   end
 
-  #
-  #   PRIVATE
-  #
+  @doc false
+  def keys(%TRecord{} = schema, %TString{} = type), do: %{schema | keys_schema: type}
+  def keys(%TRecord{}, %_{}), do: raise(ArgumentError, "Record keys must be string")
 
-  defp keys(%TRecord{} = schema, %TString{} = value), do: %{schema | keys_schema: value}
-  defp keys(%TRecord{}, %_{}), do: raise(ArgumentError, "Record keys must be string")
-
-  defp values(%TRecord{} = schema, %_{} = value), do: %{schema | values_schema: value}
+  @doc false
+  def values(%TRecord{} = schema, %_{} = type), do: %{schema | values_schema: type}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Record do

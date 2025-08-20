@@ -9,6 +9,7 @@ defmodule Zodish.Type.Any do
 
   defstruct []
 
+  @doc false
   def new, do: %TAny{}
 end
 

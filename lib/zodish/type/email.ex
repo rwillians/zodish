@@ -9,6 +9,7 @@ defmodule Zodish.Type.Email do
 
   defstruct ruleset: :gmail
 
+  @doc false
   def new(opts \\ []) do
     Enum.reduce(opts, %TEmail{}, fn
       {:ruleset, value}, schema -> ruleset(schema, value)
@@ -16,6 +17,7 @@ defmodule Zodish.Type.Email do
     end)
   end
 
+  @doc false
   def ruleset(%TEmail{} = schema, value)
       when value in [:gmail, :html5, :rfc5322, :unicode],
       do: %{schema | ruleset: value}

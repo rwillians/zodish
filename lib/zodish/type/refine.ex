@@ -14,6 +14,7 @@ defmodule Zodish.Type.Refine do
             fun: nil,
             error: "is invalid"
 
+  @doc false
   def new(%_{} = inner_type, fun, opts \\ [])
       when is_function(fun, 1) and is_list(opts) do
     type = %Refine{
@@ -27,11 +28,8 @@ defmodule Zodish.Type.Refine do
     end)
   end
 
-  #
-  #   PRIVATE
-  #
-
-  defp error(%Refine{} = type, <<value::binary>>), do: %{type | error: value}
+  @doc false
+  def error(%Refine{} = type, <<message::binary>>), do: %{type | error: message}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Refine do

@@ -15,6 +15,7 @@ defmodule Zodish.Type.Optional do
   defstruct inner_type: nil,
             default: nil
 
+  @doc false
   def new(%_{} = inner_type, opts \\ []) do
     Enum.reduce(opts, %TOptional{inner_type: inner_type}, fn
       {:default, value}, type -> default(type, value)
@@ -22,8 +23,12 @@ defmodule Zodish.Type.Optional do
     end)
   end
 
-  def default(%TOptional{} = type, value) when is_function(value, 0), do: %{type | default: value}
+  @doc false
+  def default(%TOptional{} = type, value)
+      when is_function(value, 0),
+      do: %{type | default: value}
 
+  @doc false
   def default(%TOptional{} = type, value) do
     case Zodish.Type.parse(type.inner_type, value) do
       {:ok, value} -> %{type | default: value}

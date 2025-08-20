@@ -21,6 +21,7 @@ defmodule Zodish.Type.Integer do
             lt: nil,
             lte: nil
 
+  @doc false
   def new(opts \\ []) do
     Enum.reduce(opts, %TInteger{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -36,25 +37,30 @@ defmodule Zodish.Type.Integer do
     end)
   end
 
+  @doc false
   def coerce(%TInteger{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
+  @doc false
   @opts [error: "expected an integer greater than {{gt}}, got {{value}}"]
   def gt(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected an integer greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected an integer less than {{lt}}, got {{value}}"]
   def lt(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
+  @doc false
   @opts [error: "expected an integer less than or equal to {{lte}}, got {{value}}"]
   def lte(%TInteger{} = type, value, opts \\ [])
       when is_integer(value),
