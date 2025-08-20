@@ -25,6 +25,7 @@ defmodule Zodish do
   alias Zodish.Type.Struct, as: TStruct
   alias Zodish.Type.Tuple, as: TTuple
   alias Zodish.Type.Union, as: TUnion
+  alias Zodish.Type.URI, as: TUri
   alias Zodish.Type.Uuid, as: TUuid
 
   # effect types
@@ -1323,6 +1324,37 @@ defmodule Zodish do
         when inner_types: [Zodish.Type.t(), ...]
 
   defdelegate union(schemas), to: TUnion, as: :new
+
+  @doc ~S"""
+  Defines a string URI type.
+
+      iex> Z.uri()
+      iex> |> Z.parse("https://foo.bar/")
+      {:ok, "https://foo.bar/"}
+
+  ## Options
+
+  You can constrain which schemes are allowed by passing the
+  `:schemes` option:
+
+      iex> Z.uri(schemes: ["https"])
+      iex> |> Z.parse("http://localhost/")
+      {:error, %Zodish.Issue{message: "scheme not allowed"}}
+
+  You can trim the trailing slash in the uri by passing the
+  `:trim_trailing_slash` option:
+
+      iex> Z.uri(trim_trailing_slash: true)
+      iex> |> Z.parse("https://foo.bar/api/")
+      {:ok, "https://foo.bar/api"}
+
+  """
+  @spec uri([option]) :: TUri.t()
+        when option:
+          {:schemes, [String.t()]}
+          | {:trim_trailing_slash, boolean()}
+
+  defdelegate uri(opts \\ []), to: TUri, as: :new
 
   @doc ~S"""
   Defines a UUID type (decorated String type).
