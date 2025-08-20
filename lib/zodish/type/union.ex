@@ -20,6 +20,11 @@ defimpl Zodish.Type, for: Zodish.Type.Union do
   alias Zodish.Type.Union, as: TUnion
 
   @impl Zodish.Type
+  def infer(%TUnion{}) do
+    quote(do: term())
+  end
+
+  @impl Zodish.Type
   def parse(%TUnion{} = type, value) do
     {parsed, issues} =
       Enum.reduce_while(type.inner_types, {nil, []}, fn inner_type, {_, issues} ->

@@ -74,6 +74,11 @@ defimpl Zodish.Type, for: Zodish.Type.Float do
   alias Zodish.Type.Float, as: TFloat
 
   @impl Zodish.Type
+  def infer(%TFloat{}) do
+    quote(do: float())
+  end
+
+  @impl Zodish.Type
   def parse(%TFloat{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

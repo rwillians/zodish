@@ -59,6 +59,11 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
   alias Zodish.Type.Map, as: TMap
 
   @impl Zodish.Type
+  def infer(%TMap{}) do
+    quote(do: map())
+  end
+
+  @impl Zodish.Type
   def parse(%TMap{} = schema, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(schema, value),

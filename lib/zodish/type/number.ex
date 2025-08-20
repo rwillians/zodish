@@ -74,6 +74,11 @@ defimpl Zodish.Type, for: Zodish.Type.Number do
   alias Zodish.Type.Number, as: TNumber
 
   @impl Zodish.Type
+  def infer(%TNumber{}) do
+    quote(do: number())
+  end
+
+  @impl Zodish.Type
   def parse(%TNumber{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

@@ -36,6 +36,11 @@ defimpl Zodish.Type, for: Zodish.Type.URI do
   alias Zodish.Type.URI, as: TUri
 
   @impl Zodish.Type
+  def infer(%TUri{}) do
+    quote(do: String.t())
+  end
+
+  @impl Zodish.Type
   def parse(%TUri{} = type, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(type, value),

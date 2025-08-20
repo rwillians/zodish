@@ -29,6 +29,11 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
   alias Zodish.Type.Tuple, as: TTuple
 
   @impl Zodish.Type
+  def infer(%TTuple{}) do
+    quote(do: tuple())
+  end
+
+  @impl Zodish.Type
   def parse(%TTuple{} = type, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),

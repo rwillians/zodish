@@ -33,6 +33,11 @@ defimpl Zodish.Type, for: Zodish.Type.Atom do
   alias Zodish.Type.Atom, as: TAtom
 
   @impl Zodish.Type
+  def infer(%TAtom{}) do
+    quote(do: atom())
+  end
+
+  @impl Zodish.Type
   def parse(%TAtom{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

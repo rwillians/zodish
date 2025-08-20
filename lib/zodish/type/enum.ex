@@ -56,6 +56,12 @@ defimpl Zodish.Type, for: Zodish.Type.Enum do
   alias Zodish.Type.Enum, as: TEnum
 
   @impl Zodish.Type
+  def infer(%TEnum{}) do
+    # @todo
+    quote(do: atom())
+  end
+
+  @impl Zodish.Type
   def parse(%TEnum{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

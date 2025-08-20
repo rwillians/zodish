@@ -28,6 +28,11 @@ defimpl Zodish.Type, for: Zodish.Type.Email do
   alias Zodish.Type.String, as: TString
 
   @impl Zodish.Type
+  def infer(%TEmail{}) do
+    quote(do: String.t())
+  end
+
+  @impl Zodish.Type
   def parse(%TEmail{} = schema, value) do
     regex = regex_for(schema.ruleset)
 

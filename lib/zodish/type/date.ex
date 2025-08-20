@@ -32,6 +32,11 @@ defimpl Zodish.Type, for: Zodish.Type.Date do
   alias Zodish.Type.Date, as: TDate
 
   @impl Zodish.Type
+  def infer(%TDate{}) do
+    quote(do: Date.t())
+  end
+
+  @impl Zodish.Type
   def parse(%TDate{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

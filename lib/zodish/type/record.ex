@@ -41,6 +41,11 @@ defimpl Zodish.Type, for: Zodish.Type.Record do
   alias Zodish.Type.Record, as: TRecord
 
   @impl Zodish.Type
+  def infer(%TRecord{}) do
+    quote(do: map())
+  end
+
+  @impl Zodish.Type
   def parse(%TRecord{} = schema, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),

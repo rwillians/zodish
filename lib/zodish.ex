@@ -47,6 +47,13 @@ defmodule Zodish do
   defdelegate parse(type, value), to: Zodish.Type
 
   @doc ~S"""
+  Infers the Elixir type for a type schema.
+  """
+  @spec infer(Zodish.Type.t()) :: Macro.t()
+
+  defdelegate infer(type), to: Zodish.Type
+
+  @doc ~S"""
   Defines a type that accepts any value.
 
       iex> Z.any()

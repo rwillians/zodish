@@ -32,6 +32,11 @@ defimpl Zodish.Type, for: Zodish.Type.Boolean do
   alias Zodish.Type.Boolean, as: TBoolean
 
   @impl Zodish.Type
+  def infer(%TBoolean{}) do
+    quote(do: boolean())
+  end
+
+  @impl Zodish.Type
   def parse(%TBoolean{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

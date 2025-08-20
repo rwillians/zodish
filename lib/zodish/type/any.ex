@@ -17,5 +17,10 @@ defimpl Zodish.Type, for: Zodish.Type.Any do
   alias Zodish.Type.Any, as: TAny
 
   @impl Zodish.Type
+  def infer(%TAny{}) do
+    quote(do: any())
+  end
+
+  @impl Zodish.Type
   def parse(%TAny{}, value), do: {:ok, value}
 end

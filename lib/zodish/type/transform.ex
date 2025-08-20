@@ -20,6 +20,11 @@ defimpl Zodish.Type, for: Zodish.Type.Transform do
   alias Zodish.Type.Transform, as: Transform
 
   @impl Zodish.Type
+  def infer(%Transform{}) do
+    quote(do: term())
+  end
+
+  @impl Zodish.Type
   def parse(%Transform{} = type, value) do
     with {:ok, value} <- Zodish.Type.parse(type.inner_type, value),
          do: {:ok, apply(type.fun, [value])}

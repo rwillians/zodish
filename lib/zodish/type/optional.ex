@@ -41,6 +41,11 @@ defimpl Zodish.Type, for: Zodish.Type.Optional do
   alias Zodish.Type.Optional, as: TOptional
 
   @impl Zodish.Type
+  def infer(%TOptional{inner_type: inner_type}) do
+    quote(do: unquote(Zodish.Type.infer(inner_type)) | nil)
+  end
+
+  @impl Zodish.Type
   def parse(%TOptional{default: nil}, nil), do: {:ok, nil}
   def parse(%TOptional{} = type, nil) do
     case resolve(type.default) do

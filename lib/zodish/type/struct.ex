@@ -86,6 +86,11 @@ defimpl Zodish.Type, for: Zodish.Type.Struct do
   alias Zodish.Type.Struct, as: TStruct
 
   @impl Zodish.Type
+  def infer(%TStruct{module: mod}) do
+    quote(do: %unquote(mod){})
+  end
+
+  @impl Zodish.Type
   def parse(%TStruct{module: module} = type, %module{} = value), do: parse(type, Map.from_struct(value))
   def parse(%TStruct{} = type, %module{}), do: {:error, issue("expected a struct of type #{to_mod_name(type.module)}, got struct of #{to_mod_name(module)}")}
   def parse(%TStruct{} = type, value) do

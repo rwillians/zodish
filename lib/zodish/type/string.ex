@@ -117,6 +117,11 @@ defimpl Zodish.Type, for: Zodish.Type.String do
   alias Zodish.Type.String, as: TString
 
   @impl Zodish.Type
+  def infer(%TString{}) do
+    quote(do: String.t())
+  end
+
+  @impl Zodish.Type
   def parse(%TString{} = type, value) do
     with :ok <- validate_required(value),
          {:ok, value} <- coerce(type, value),

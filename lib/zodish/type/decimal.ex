@@ -98,6 +98,11 @@ defimpl Zodish.Type, for: Zodish.Type.Decimal do
   alias Zodish.Type.Decimal, as: TDecimal
 
   @impl Zodish.Type
+  def infer(%TDecimal{}) do
+    quote(do: Decimal.t())
+  end
+
+  @impl Zodish.Type
   def parse(%TDecimal{} = type, value) do
     with :ok <- validate_required(value),
         {:ok, value} <- coerce(type, value),

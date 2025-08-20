@@ -20,6 +20,11 @@ defimpl Zodish.Type, for: Zodish.Type.Uuid do
   alias Zodish.Type.Uuid, as: TUuid
 
   @impl Zodish.Type
+  def infer(%TUuid{}) do
+    quote(do: <<_::288>>)
+  end
+
+  @impl Zodish.Type
   def parse(%TUuid{} = schema, value) do
     regex = regex_for(schema.version)
 

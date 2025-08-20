@@ -61,6 +61,13 @@ defimpl Zodish.Type, for: Zodish.Type.List do
   alias Zodish.Type.List, as: TList
 
   @impl Zodish.Type
+  def infer(%TList{inner_type: inner_type}) do
+    quote do
+      list(unquote(Zodish.Type.infer(inner_type)))
+    end
+  end
+
+  @impl Zodish.Type
   def parse(%TList{} = type, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),

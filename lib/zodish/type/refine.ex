@@ -38,6 +38,11 @@ defimpl Zodish.Type, for: Zodish.Type.Refine do
   alias Zodish.Type.Refine, as: Refine
 
   @impl Zodish.Type
+  def infer(%Refine{inner_type: inner_type}) do
+    Zodish.Type.infer(inner_type)
+  end
+
+  @impl Zodish.Type
   def parse(%Refine{} = type, value) do
     with {:ok, value} <- Zodish.Type.parse(type.inner_type, value),
          {:ok, value} <- refine(type, value),
