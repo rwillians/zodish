@@ -43,8 +43,10 @@ defimpl Zodish.Type, for: Zodish.Type.Optional do
   @impl Zodish.Type
   def parse(%TOptional{default: nil}, nil), do: {:ok, nil}
   def parse(%TOptional{} = type, nil) do
-    with {:ok, value} <- Zodish.Type.parse(type.inner_type, resolve(type.default)),
-         do: {:ok, value}
+    case resolve(type.default) do
+      nil -> {:ok, nil}
+      value -> Zodish.Type.parse(type.inner_type, value)
+    end
   end
   def parse(%TOptional{} = type, value), do: Zodish.Type.parse(type.inner_type, value)
 
