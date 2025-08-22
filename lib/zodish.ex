@@ -1342,17 +1342,23 @@ defmodule Zodish do
       {:error, %Zodish.Issue{message: "scheme not allowed"}}
 
   You can trim the trailing slash in the uri by passing the
-  `:trim_trailing_slash` option:
+  `:trailing_slash` option:
 
-      iex> Z.uri(trim_trailing_slash: true)
+      iex> Z.uri(trailing_slash: :trim)
       iex> |> Z.parse("https://foo.bar/api/")
       {:ok, "https://foo.bar/api"}
+
+  Likewise, you can enfore the trailing slash:
+
+      iex> Z.uri(trailing_slash: :enforce)
+      iex> |> Z.parse("https://foo.bar/api")
+      {:ok, "https://foo.bar/api/"}
 
   """
   @spec uri([option]) :: TUri.t()
         when option:
           {:schemes, [String.t()]}
-          | {:trim_trailing_slash, boolean()}
+          | {:trailing_slash, :keep | :trim | :enforce}
 
   defdelegate uri(opts \\ []), to: TUri, as: :new
 
