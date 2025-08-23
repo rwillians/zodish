@@ -19,10 +19,10 @@ defmodule Zodish.Issue do
           parse_score: non_neg_integer()
         }
 
-  defstruct path: [],
-            message: nil,
-            issues: [],
-            parse_score: 0
+  defexception path: [],
+               message: nil,
+               issues: [],
+               parse_score: 0
 
   @doc ~S"""
   Creates a new issue with the given message.
