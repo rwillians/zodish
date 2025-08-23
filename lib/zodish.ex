@@ -47,6 +47,30 @@ defmodule Zodish do
   defdelegate parse(type, value), to: Zodish.Type
 
   @doc ~S"""
+  Same as `parse/1` but raises an error if failed to parse the given
+  params.
+
+      iex> Z.string()
+      iex> |> Z.parse!("Hello, World!")
+      "Hello, World!"
+
+      iex> Z.string()
+      iex> |> Z.parse!(123)
+      ** (Zodish.Issue) expected a string, got integer
+
+  """
+  @spec parse!(type, value) :: term()
+        when type: Zodish.Type.t(),
+             value: term()
+
+  def parse!(type, value) do
+    case parse(type, value) do
+      {:ok, parsed} -> parsed
+      {:error, issue} -> raise(issue)
+    end
+  end
+
+  @doc ~S"""
   Defines a type that accepts any value.
 
       iex> Z.any()
