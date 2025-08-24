@@ -75,7 +75,7 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
 
   defp coerce(%TMap{coerce: false}, value), do: {:ok, value}
   defp coerce(%TMap{coerce: true}, %_{} = value), do: {:ok, Map.drop(Map.from_struct(value), [:__meta__])}
-  defp coerce(%TMap{coerce: true}, %{} = value), do: value
+  defp coerce(%TMap{coerce: true}, %{} = value), do: {:ok, value}
   defp coerce(%TMap{coerce: true}, [{_, _} | _] = value), do: {:ok, Enum.into(value, %{})}
   defp coerce(_, value), do: {:ok, value}
 
