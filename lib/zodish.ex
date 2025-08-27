@@ -965,13 +965,28 @@ defmodule Zodish do
         issues: [%Zodish.Issue{path: ["foo"], message: "expected string to have at least 1 character, got 0 characters"}],
       }}
 
+  Alternatively you can pass a type as single argument to `Z.record/1`
+  where it will be used as the :values types:
+
+      iex> Z.record(Z.string(min_length: 1))
+      iex> |> Z.parse(%{"foo" => ""})
+      {:error, %Zodish.Issue{
+        path: [],
+        message: "one or more fields failed validation",
+        parse_score: 1,
+        issues: [%Zodish.Issue{path: ["foo"], message: "expected string to have at least 1 character, got 0 characters"}],
+      }}
+
   """
   @spec record(opts :: [option]) :: TRecord.t()
         when option:
                {:keys, Zodish.Type.t()}
                | {:values, Zodish.Type.t()}
 
-  defdelegate record(opts \\ []), to: TRecord, as: :new
+  def record(opts \\ [])
+
+  def record(%_{} = type), do: TRecord.new(values: type)
+  def record(opts), do: TRecord.new(opts)
 
   @doc ~S"""
   Refines a value with a custom validation.
