@@ -809,6 +809,50 @@ defmodule Zodish do
   defdelegate number(opts \\ []), to: TNumber, as: :new
 
   @doc ~S"""
+  Defines a numeric string type.
+
+      iex> Z.numeric()
+      iex> |> Z.parse("123456")
+      {:ok, "123456"}
+
+      iex> Z.numeric()
+      iex> |> Z.parse("a1b2c3")
+      {:error, %Zodish.Issue{message: "must contain numbers only"}}
+
+  This is an alias to `Z.string/1` where it has a regex to match
+  numeric strings, therefore it accepts all the same options as
+  `Z.string/1` except for the :regex option.
+  """
+  @spec numeric(opts :: [option]) :: TString.t()
+        when option:
+               {:coerce, boolean()}
+               | {:trim, boolean()}
+               | {:downcase, boolean()}
+               | {:upcase, boolean()}
+               | {:exact_length, non_neg_integer()}
+               | {:exact_length, Zodish.Option.t(non_neg_integer())}
+               | {:min_length, non_neg_integer()}
+               | {:min_length, Zodish.Option.t(non_neg_integer())}
+               | {:max_length, non_neg_integer()}
+               | {:max_length, Zodish.Option.t(non_neg_integer())}
+               | {:starts_with, String.t()}
+               | {:starts_with, Zodish.Option.t(String.t())}
+               | {:ends_with, String.t()}
+               | {:ends_with, Zodish.Option.t(String.t())}
+
+  def numeric(opts \\ []) do
+    {regex, opts} = Keyword.pop(opts, :regex)
+
+    unless is_nil(regex),
+      do: raise(ArgumentError, message: "Not allowed to pass a regex to a numeric string type")
+
+    string([
+      {:regex, {~r/^[0-9]+$/, error: "must contain numbers only"}}
+      | opts
+    ])
+  end
+
+  @doc ~S"""
   Removes the specified keys from the type's shape.
 
       iex> Z.map(%{name: Z.string(), age: Z.integer()})
