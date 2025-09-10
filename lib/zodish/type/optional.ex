@@ -9,7 +9,7 @@ defmodule Zodish.Type.Optional do
   @type t() :: t(Zodish.Type.t())
   @type t(inner_type) :: %TOptional{
           inner_type: inner_type,
-          default: inner_type | (-> inner_type) | nil
+          default: inner_type | {module, function :: atom, args :: list()} | (-> inner_type) | nil
         }
 
   defstruct inner_type: nil,
@@ -24,6 +24,10 @@ defmodule Zodish.Type.Optional do
   end
 
   @doc false
+  def default(%TOptional{} = type, {mod, fun, args})
+      when is_atom(mod) and is_atom(fun) and is_list(args),
+      do: %{type | default: {mod, fun, args}}
+
   def default(%TOptional{} = type, value)
       when is_function(value, 0),
       do: %{type | default: value}
@@ -54,6 +58,7 @@ defimpl Zodish.Type, for: Zodish.Type.Optional do
   #   PRIVATE
   #
 
+  defp resolve({mod, fun, args}), do: apply(mod, fun, args)
   defp resolve(fun) when is_function(fun), do: apply(fun, [])
   defp resolve(value), do: value
 end

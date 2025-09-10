@@ -928,6 +928,15 @@ defmodule Zodish do
       iex> |> Z.parse(nil)
       {:error, %Zodish.Issue{message: "expected an integer, got string"}}
 
+  If you're defining your schema at compile time into a compiled
+  variable, then you won't be able to use an anonymous function as the
+  default value. So instead you can pass an mfa tuple of the function
+  that should be called to get the default value:
+
+      iex> Z.optional(Z.integer(), default: {Echo, :say, [42]})
+      iex> |> Z.parse(nil)
+      {:ok, 42}
+
   """
   @spec optional(inner_type :: Zodish.Type.t(), opts :: [option]) :: TOptional.t()
         when option: {:default, (-> any()) | any() | nil}
