@@ -1346,6 +1346,16 @@ defmodule Zodish do
       iex> |> Z.parse(3)
       {:ok, 6}
 
+  Alternatively, a `{mod, fun, args}` tuple can be provided indicating
+  what function should be invoked. The function is invoked with the
+  Zodish value as its first argument followed by the `args` you
+  provided.
+
+      iex> Z.integer()
+      iex> |> Z.transform({Integer, :to_string, []})
+      iex> |> Z.parse(10)
+      {:ok, "10"}
+
   """
   @spec transform(inner_type, fun) :: Transform.t()
         when inner_type: Zodish.Type.t(),
