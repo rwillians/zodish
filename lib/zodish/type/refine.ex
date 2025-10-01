@@ -1,12 +1,11 @@
 defmodule Zodish.Type.Refine do
   alias __MODULE__, as: Refine
 
-  @type refine_fun() :: (any() -> boolean())
-
   @type t() :: t(Zodish.Type.t())
+
   @type t(inner_type) :: %Refine{
           inner_type: inner_type,
-          fun: refine_fun(),
+          fun: (any() -> boolean()) | Zodish.Type.mfa(),
           error: String.t()
         }
 
@@ -16,13 +15,9 @@ defmodule Zodish.Type.Refine do
 
   @doc false
   def new(%_{} = inner_type, fun, opts \\ [])
-      when is_function(fun, 1) and is_list(opts) do
-    type = %Refine{
-      inner_type: inner_type,
-      fun: fun,
-    }
-
-    Enum.reduce(opts, type, fn
+      when is_list(opts) do
+    Enum.reduce([{:fun, fun} | opts], %Refine{inner_type: inner_type}, fn
+      {:fun, fun}, type -> fun(type, fun)
       {:error, value}, type -> error(type, value)
       {key, _}, _ -> raise(ArgumentError, "Unknown option #{inspect(key)} for Zodish.Refine")
     end)
@@ -30,6 +25,13 @@ defmodule Zodish.Type.Refine do
 
   @doc false
   def error(%Refine{} = type, <<message::binary>>), do: %{type | error: message}
+
+  #
+  #  PRIVATE
+  #
+
+  defp fun(%Refine{} = type, fun) when is_function(fun, 1), do: %{type | fun: fun}
+  defp fun(%Refine{} = type, {m, f, a}) when is_atom(m) and is_atom(f) and is_list(a), do: %{type | fun: {m, f, a}}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Refine do
@@ -49,9 +51,12 @@ defimpl Zodish.Type, for: Zodish.Type.Refine do
   #
 
   defp refine(%Refine{fun: fun} = type, value) do
-    case apply(fun, [value]) do
+    case do_apply(fun, value) do
       true -> {:ok, value}
       false -> {:error, %{issue(type.error) | parse_score: parse_score(value)}}
     end
   end
+
+  defp do_apply(fun, value) when is_function(fun, 1), do: apply(fun, [value])
+  defp do_apply({m, f, a}, value), do: apply(m, f, [value | a])
 end

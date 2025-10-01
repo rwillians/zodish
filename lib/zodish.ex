@@ -177,40 +177,13 @@ defmodule Zodish do
       {:ok, 123}
 
   """
-  @spec coerce(type, value :: boolean() | :unsafe) :: TAtom.t()
+  @spec coerce(type, value :: boolean() | :unsafe) :: type
         when type: TAtom.t()
   @spec coerce(type, value :: boolean()) :: type
-        when type: TBoolean.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDate.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDateTime.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TDecimal.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TEnum.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TFloat.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TInteger.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TNumber.t()
-  @spec coerce(type, value :: boolean()) :: type
-        when type: TString.t()
+        when type: struct()
 
   def coerce(type, value \\ true)
-  def coerce(%TAtom{} = type, value), do: TAtom.coerce(type, value)
-  def coerce(%TBoolean{} = type, value), do: TBoolean.coerce(type, value)
-  def coerce(%TDate{} = type, value), do: TDate.coerce(type, value)
-  def coerce(%TDateTime{} = type, value), do: TDateTime.coerce(type, value)
-  def coerce(%TDecimal{} = type, value), do: TDecimal.coerce(type, value)
-  def coerce(%TEnum{} = type, value), do: TEnum.coerce(type, value)
-  def coerce(%TFloat{} = type, value), do: TFloat.coerce(type, value)
-  def coerce(%TInteger{} = type, value), do: TInteger.coerce(type, value)
-  def coerce(%TMap{} = type, value), do: TMap.coerce(type, value)
-  def coerce(%TNumber{} = type, value), do: TNumber.coerce(type, value)
-  def coerce(%TString{} = type, value), do: TString.coerce(type, value)
-  def coerce(%TStruct{} = type, value), do: TStruct.coerce(type, value)
+  def coerce(%mod{coerce: _} = type, value), do: apply(mod, :coerce, [type, value])
 
   @doc ~S"""
   Defines a date type.
@@ -1066,7 +1039,7 @@ defmodule Zodish do
   """
   @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()
         when inner_type: Zodish.Type.t(),
-             fun: Refine.refine_fun(),
+             fun: (any() -> boolean()) | Zodish.Type.mfa(),
              option: {:error, String.t()}
 
   defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new

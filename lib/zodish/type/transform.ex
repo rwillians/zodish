@@ -4,7 +4,7 @@ defmodule Zodish.Type.Transform do
   @type t() :: t(Zodish.Type.t())
   @type t(inner_type) :: %Transform{
           inner_type: inner_type,
-          fun: (any() -> any())
+          fun: (any() -> any()) | Zodish.Type.mfa()
         }
 
   defstruct inner_type: nil,
@@ -15,9 +15,9 @@ defmodule Zodish.Type.Transform do
       when is_function(fun, 1),
       do: %Transform{inner_type: inner_type, fun: fun}
 
-  def new(%_{} = inner_type, {mod, fun, args})
-      when is_atom(mod) and is_atom(fun) and is_list(args),
-      do: %Transform{inner_type: inner_type, fun: {mod, fun, args}}
+  def new(%_{} = inner_type, {m, f, a})
+      when is_atom(m) and is_atom(f) and is_list(a),
+      do: %Transform{inner_type: inner_type, fun: {m, f, a}}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Transform do
@@ -29,6 +29,6 @@ defimpl Zodish.Type, for: Zodish.Type.Transform do
          do: {:ok, transform(type.fun, value)}
   end
 
-  defp transform({mod, fun, args}, value), do: apply(mod, fun, [value] ++ args)
+  defp transform({m, f, a}, value), do: apply(m, f, [value | a])
   defp transform(fun, value) when is_function(fun, 1), do: apply(fun, [value])
 end
