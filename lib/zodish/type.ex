@@ -3,11 +3,6 @@ defprotocol Zodish.Type do
   Protocol for parsing values based on Zodish types.
   """
 
-  @typedoc ~S"""
-  A `{mod, fun, args}` tuple pointing to a callback function.
-  """
-  @type mfa() :: {module(), fun :: atom(), args :: [any()]}
-
   @doc ~S"""
   Parses a value based on the given Zodish type.
   """

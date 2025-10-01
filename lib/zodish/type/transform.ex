@@ -4,7 +4,7 @@ defmodule Zodish.Type.Transform do
   @type t() :: t(Zodish.Type.t())
   @type t(inner_type) :: %Transform{
           inner_type: inner_type,
-          fun: (any() -> any()) | Zodish.Type.mfa()
+          fun: (any() -> any()) | mfa()
         }
 
   defstruct inner_type: nil,

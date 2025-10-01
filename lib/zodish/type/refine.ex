@@ -2,10 +2,9 @@ defmodule Zodish.Type.Refine do
   alias __MODULE__, as: Refine
 
   @type t() :: t(Zodish.Type.t())
-
   @type t(inner_type) :: %Refine{
           inner_type: inner_type,
-          fun: (any() -> boolean()) | Zodish.Type.mfa(),
+          fun: (any() -> boolean()) | mfa(),
           error: String.t()
         }
 

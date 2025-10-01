@@ -9,7 +9,7 @@ defmodule Zodish.Type.Optional do
   @type t() :: t(Zodish.Type.t())
   @type t(inner_type) :: %TOptional{
           inner_type: inner_type,
-          default: inner_type | (-> inner_type) | Zodish.Type.mfa() | nil
+          default: inner_type | (-> inner_type) | mfa() | nil
         }
 
   defstruct inner_type: nil,

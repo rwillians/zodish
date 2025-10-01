@@ -1039,7 +1039,7 @@ defmodule Zodish do
   """
   @spec refine(inner_type, fun, opts :: [option]) :: Refine.t()
         when inner_type: Zodish.Type.t(),
-             fun: (any() -> boolean()) | Zodish.Type.mfa(),
+             fun: (any() -> boolean()) | mfa(),
              option: {:error, String.t()}
 
   defdelegate refine(inner_type, fun, opts \\ []), to: Refine, as: :new
