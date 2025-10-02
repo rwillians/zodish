@@ -6,6 +6,7 @@ defmodule Zodish.Option do
   """
 
   @typedoc false
+  @type t() :: t(any())
   @type t(inner_type) :: {inner_type, %{error: String.t()}}
 
   @doc ~S"""
