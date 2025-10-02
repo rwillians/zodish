@@ -10,5 +10,5 @@
 *.ez
 .fetch
 .DS_Store
-bookk-*.tar
+zodish-*.tar
 erl_crash.dump
