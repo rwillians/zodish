@@ -3,7 +3,7 @@
 **Zodish** is a schema parser and validator library heavily inspired
 by JavaScript's [Zod](https://zod.dev).
 
-See the full [documentation](https://hexdocs.pm/zodish) at hexpm.
+See the full [documentation](https://hexdocs.pm/zodish) at hexdocs.
 
 
 ## Installation
