@@ -1,3 +1,5 @@
+/priv/plts/*.plt.hash
+/priv/plts/*.plt
 /.elixir_ls/
 /ignore/
 /_build/

@@ -813,6 +813,9 @@ defmodule Zodish do
                | {:ends_with, String.t()}
                | {:ends_with, Zodish.Option.t(String.t())}
 
+  @dialyzer {:nowarn_function, numeric: 0, numeric: 1}
+  #           ↑ because dialyzer was complaining about the spec having
+  #             "too many types for the function"
   def numeric(opts \\ []) do
     {regex, opts} = Keyword.pop(opts, :regex)
 

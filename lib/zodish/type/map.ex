@@ -103,10 +103,11 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
   defp parse_value(%TMap{mode: :strip} = type, map) do
     {parsed, issues} = parse_known_fields(type.shape, map)
 
-    issue = flatten(%Issue{
-      message: "one or more fields failed validation",
-      issues: :lists.reverse(issues)
-    })
+    issue =
+      flatten(%Issue{
+        message: "one or more fields failed validation",
+        issues: :lists.reverse(issues)
+      })
 
     case issues do
       [] -> {:ok, parsed}
@@ -131,10 +132,11 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
     {parsed, other_issues} = parse_known_fields(type.shape, value)
     issues = unknown_field_issues ++ other_issues
 
-    issue = flatten(%Issue{
-      message: "one or more fields failed validation",
-      issues: :lists.reverse(issues)
-    })
+    issue =
+      flatten(%Issue{
+        message: "one or more fields failed validation",
+        issues: :lists.reverse(issues)
+      })
 
     case issues do
       [] -> {:ok, parsed}

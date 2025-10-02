@@ -100,13 +100,13 @@ defimpl Zodish.Type, for: Zodish.Type.Decimal do
   @impl Zodish.Type
   def parse(%TDecimal{} = type, value) do
     with :ok <- validate_required(value),
-        {:ok, value} <- coerce(type, value),
-        :ok <- validate_type(value),
-        :ok <- validate_gt(type, value),
-        :ok <- validate_gte(type, value),
-        :ok <- validate_lt(type, value),
-        :ok <- validate_lte(type, value),
-        do: {:ok, value}
+         {:ok, value} <- coerce(type, value),
+         :ok <- validate_type(value),
+         :ok <- validate_gt(type, value),
+         :ok <- validate_gte(type, value),
+         :ok <- validate_lt(type, value),
+         :ok <- validate_lte(type, value),
+         do: {:ok, value}
   end
 
   #

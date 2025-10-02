@@ -8,7 +8,7 @@ defprotocol Zodish.Type do
   """
   @spec parse(type :: t(), value :: any()) ::
           {:ok, any()}
-          | {:error, String.t()}
+          | {:error, Zodish.Issue.t()}
 
   def parse(type, value)
 end

@@ -60,9 +60,6 @@ defimpl Zodish.Type, for: Zodish.Type.URI do
         if scheme in schemes,
            do: :ok,
            else: {:error, issue("scheme not allowed")}
-
-      {_, _} ->
-        {:error, issue("is invalid")}
     end
   end
 

@@ -57,7 +57,7 @@ defmodule Zodish.Helpers do
   def take_sorted([], _), do: []
   def take_sorted(_, []), do: []
 
-  def take_sorted([{_, _} | _] = keyword, [_ | _] = keys)do
+  def take_sorted([{_, _} | _] = keyword, [_ | _] = keys) do
     keys
     |> Enum.reduce([], &fetch_prepend(keyword, &1, &2))
     |> :lists.reverse()
@@ -89,7 +89,24 @@ defmodule Zodish.Helpers do
   @doc ~S"""
   Returns the type of the given value.
   """
-  @spec typeof(value :: any()) :: String.t()
+  @spec typeof(value) :: String.t()
+        when value:
+               nil
+               | boolean()
+               | atom()
+               | binary()
+               | bitstring()
+               | float()
+               | integer()
+               | list()
+               | keyword()
+               | struct()
+               | map()
+               | tuple()
+               | function()
+               | pid()
+               | port()
+               | reference()
 
   def typeof(nil), do: "nil"
   def typeof(value) when is_boolean(value), do: "boolean"

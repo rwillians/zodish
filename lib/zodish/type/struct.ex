@@ -67,11 +67,10 @@ defmodule Zodish.Type.Struct do
     non_existent_keys = shape_keys -- struct_keys
     # ↑ keys defined in the shape that do not exist in the struct
 
-    for key <- non_existent_keys do
-      raise ArgumentError, "The shape key :#{key} doesn't exist in struct #{to_mod_name(type.module)}"
+    case non_existent_keys do
+      [] -> %TStruct{type | shape: shape}
+      [key | _] -> raise(ArgumentError, "The shape key :#{key} doesn't exist in struct #{to_mod_name(type.module)}")
     end
-
-    %TStruct{type | shape: shape}
   end
 
   def shape(%TStruct{}, %_{}), do: raise(ArgumentError, "Shape cannot be a struct")

@@ -63,7 +63,7 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
 
     issue = %Issue{
       message: "one or more elements of the tuple did not match the expected type",
-      issues: issues,
+      issues: issues
     }
 
     case issues do

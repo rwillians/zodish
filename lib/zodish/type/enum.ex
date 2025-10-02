@@ -14,7 +14,7 @@ defmodule Zodish.Type.Enum do
             values: []
 
   @doc false
-  def new([{_, _} | _] =opts) do
+  def new([{_, _} | _] = opts) do
     Enum.reduce(opts, %TEnum{}, fn
       {:coerce, value}, type -> coerce(type, value)
       {:values, values}, type -> values(type, values)

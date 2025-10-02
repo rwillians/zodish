@@ -3,7 +3,8 @@ defmodule Zodish.Issue do
   Represents an issue while parsing a value.
   """
 
-  import Enum, only: [map: 2, reduce: 3]
+  import Enum, only: [map: 2, reduce: 3, sum: 1]
+  import Map, only: [from_struct: 1, values: 1]
   import Zodish.Helpers, only: [pluralize: 2]
 
   alias __MODULE__, as: Issue
@@ -167,7 +168,7 @@ defmodule Zodish.Issue do
   defp parse_score(value, acc) when is_reference(value), do: acc + 1
   defp parse_score(value, acc) when is_tuple(value), do: acc + 1 + tuple_size(value)
   defp parse_score([], acc), do: acc + 1
-  defp parse_score([_ | _] = value, acc), do: acc + 1 + Enum.sum(Enum.map(value, &parse_score/1))
-  defp parse_score(%_{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(Map.from_struct(value)), &parse_score/1))
-  defp parse_score(%{} = value, acc), do: acc + 1 + Enum.sum(Enum.map(Map.values(value), &parse_score/1))
+  defp parse_score([_ | _] = value, acc), do: acc + 1 + sum(map(value, &parse_score/1))
+  defp parse_score(%_{} = value, acc), do: acc + 1 + sum(map(values(from_struct(value)), &parse_score/1))
+  defp parse_score(%{} = value, acc), do: acc + 1 + sum(map(values(value), &parse_score/1))
 end

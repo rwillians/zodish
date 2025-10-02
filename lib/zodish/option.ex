@@ -6,12 +6,7 @@ defmodule Zodish.Option do
   """
 
   @typedoc false
-  @type t(inner_type) ::
-          {inner_type,
-           %{
-             required(:error) => String.t(),
-             optional(atom()) => any()
-           }}
+  @type t(inner_type) :: {inner_type, %{error: String.t()}}
 
   @doc ~S"""
   Merges two sets of options where `b` overrides `a`.

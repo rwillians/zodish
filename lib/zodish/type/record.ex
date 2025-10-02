@@ -61,17 +61,18 @@ defimpl Zodish.Type, for: Zodish.Type.Record do
     {parsed, issues} =
       Enum.reduce(value, {%{}, []}, fn {key, val}, {acc_parsed, acc_issues} ->
         with {:ok, key} <- Zodish.Type.parse(schema.keys_schema, key),
-            {:ok, val} <- Zodish.Type.parse(schema.values_schema, val) do
+             {:ok, val} <- Zodish.Type.parse(schema.values_schema, val) do
           {Map.put(acc_parsed, key, val), acc_issues}
         else
           {:error, issue} -> {acc_parsed, [prepend_path(issue, [key]) | acc_issues]}
         end
       end)
 
-    issue = flatten(%Issue{
-      message: "one or more fields failed validation",
-      issues: :lists.reverse(issues)
-    })
+    issue =
+      flatten(%Issue{
+        message: "one or more fields failed validation",
+        issues: :lists.reverse(issues)
+      })
 
     case issues do
       [] -> {:ok, parsed}
