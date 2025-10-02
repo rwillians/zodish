@@ -3,7 +3,8 @@
 **Zodish** is a schema parser and validator library heavily inspired
 by JavaScript's [Zod](https://zod.dev).
 
-See the [documentation](https://hexdocs.pm/zodish).
+See the full [documentation](https://hexdocs.pm/zodish) at hexpm.
+
 
 ## Installation
 
@@ -17,3 +18,14 @@ def deps do
   ]
 end
 ```
+
+
+## Next up
+
+Here's a non-exhaustive list of feature that I intend to add in the
+near future:
+
+1. ***At least one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+2. ***At most one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+3. ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+4. ...
