@@ -70,9 +70,9 @@ defmodule Zodish.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 1.4.5", only: [:dev, :test], runtime: false, optional: true},
+      {:dialyxir, "~> 1.4.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.38.2", only: [:dev, :docs], runtime: false},
-      {:decimal, "~> 2.3"}
+      {:decimal, ">= 2.0.0"}
     ]
   end
 
