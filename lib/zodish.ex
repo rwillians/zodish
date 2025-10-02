@@ -920,6 +920,37 @@ defmodule Zodish do
   defdelegate optional(inner_type, opts \\ []), to: TOptional, as: :new
 
   @doc ~S"""
+  Checks whether the given type is an optional type.
+
+      iex> Z.string()
+      iex> |> Z.optional()
+      iex> |> Z.optional?()
+      true
+
+      iex> Z.string()
+      iex> |> Z.optional?()
+      false
+
+  It also works if the type is wrapped in refinements and/or
+  transformations:
+
+      iex> Z.string()
+      iex> |> Z.optional()
+      iex> |> Z.refine(fn _ -> true end)
+      iex> |> Z.refine(fn _ -> true end)
+      iex> |> Z.transform(fn value -> value end)
+      iex> |> Z.optional?()
+      true
+
+  """
+  @spec optional?(type :: Zodish.Type.t()) :: boolean()
+
+  def optional?(%TOptional{}), do: true
+  def optional?(%Refine{inner_type: %_{} = inner_type}), do: optional?(inner_type)
+  def optional?(%Transform{inner_type: %_{} = inner_type}), do: optional?(inner_type)
+  def optional?(_), do: false
+
+  @doc ~S"""
   Keeps only the specified keys from the type's shape.
 
       iex> Z.map(%{name: Z.string(), age: Z.integer()})
