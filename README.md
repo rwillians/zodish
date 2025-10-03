@@ -14,7 +14,7 @@ alias Zodish, as: Z
           name: Z.string(trim: true, min_length: 1, max_length: 100),
           email: Z.email(),
           phone:
-            Z.string(regex: {~r/^\+\d{7,15}/, error: "invalid phone number"})
+            Z.string(regex: {~r/^\+\d{7,15}$/, error: "invalid phone number"})
             |> Z.optional()
         })
 
@@ -23,7 +23,7 @@ def parse(input) do
 end
 ```
 
-See the full [documentation](https://hexdocs.pm/zodish) at hexdocs.
+See the full [documentation](https://hexdocs.pm/zodish/Zodish.html) at hexdocs.
 
 
 ## Installation

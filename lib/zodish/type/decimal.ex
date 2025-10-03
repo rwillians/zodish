@@ -21,7 +21,9 @@ defmodule Zodish.Type.Decimal do
             lt: nil,
             lte: nil
 
-  @doc false
+  @doc ~S"""
+  Creates a new Decimal type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TDecimal{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -37,12 +39,13 @@ defmodule Zodish.Type.Decimal do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Decimal type.
+  """
   def coerce(%TDecimal{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @doc false
   @opts [error: "expected a decimal greater than {{gt}}, got {{value}}"]
   def gt(type, value, opts \\ [])
   def gt(%TDecimal{} = type, %Decimal{} = value, opts),
@@ -54,7 +57,6 @@ defmodule Zodish.Type.Decimal do
       when is_integer(value),
       do: gt(type, Decimal.new("#{value}"), opts)
 
-  @doc false
   @opts [error: "expected a decimal greater than or equal to {{gte}}, got {{value}}"]
   def gte(type, value, opts \\ [])
   def gte(%TDecimal{} = type, %Decimal{} = value, opts),
@@ -66,7 +68,6 @@ defmodule Zodish.Type.Decimal do
       when is_integer(value),
       do: gte(type, Decimal.new("#{value}"), opts)
 
-  @doc false
   @opts [error: "expected a decimal less than {{lt}}, got {{value}}"]
   def lt(type, value, opts \\ [])
   def lt(%TDecimal{} = type, %Decimal{} = value, opts),
@@ -78,7 +79,6 @@ defmodule Zodish.Type.Decimal do
       when is_integer(value),
       do: lt(type, Decimal.new("#{value}"), opts)
 
-  @doc false
   @opts [error: "expected a decimal less than or equal to {{lte}}, got {{value}}"]
   def lte(type, value, opts \\ [])
   def lte(%TDecimal{} = type, %Decimal{} = value, opts),

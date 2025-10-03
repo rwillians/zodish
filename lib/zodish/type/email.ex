@@ -9,7 +9,9 @@ defmodule Zodish.Type.Email do
 
   defstruct ruleset: :gmail
 
-  @doc false
+  @doc ~S"""
+  Creates a new Email type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TEmail{}, fn
       {:ruleset, value}, schema -> ruleset(schema, value)
@@ -17,7 +19,15 @@ defmodule Zodish.Type.Email do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Defines what ruleset to use when validating an email address.
+
+  Possible options are:
+  - `:gmail` (default);
+  - `:html5`;
+  - `:rfc5322`; and
+  - `:unicode`.
+  """
   def ruleset(%TEmail{} = schema, value)
       when value in [:gmail, :html5, :rfc5322, :unicode],
       do: %{schema | ruleset: value}

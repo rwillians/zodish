@@ -10,7 +10,10 @@ defmodule Zodish.Type.Transform do
   defstruct inner_type: nil,
             fun: nil
 
-  @doc false
+  @doc ~S"""
+  Applies a one-arity transformation function or MFA to the output of
+  the given inner type.
+  """
   def new(%_{} = inner_type, fun)
       when is_function(fun, 1),
       do: %Transform{inner_type: inner_type, fun: fun}

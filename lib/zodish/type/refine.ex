@@ -12,7 +12,10 @@ defmodule Zodish.Type.Refine do
             fun: nil,
             error: "is invalid"
 
-  @doc false
+  @doc ~S"""
+  Refines the given `inner_type` with some arbitrary validation
+  function.
+  """
   def new(%_{} = inner_type, fun, opts \\ [])
       when is_list(opts) do
     Enum.reduce([{:fun, fun} | opts], %Refine{inner_type: inner_type}, fn
@@ -22,7 +25,6 @@ defmodule Zodish.Type.Refine do
     end)
   end
 
-  @doc false
   def error(%Refine{} = type, <<message::binary>>), do: %{type | error: message}
 
   #

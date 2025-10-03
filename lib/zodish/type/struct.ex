@@ -19,7 +19,9 @@ defmodule Zodish.Type.Struct do
             mode: :strict,
             shape: %{}
 
-  @doc false
+  @doc ~S"""
+  Creates a new Struct type.
+  """
   def new([{_, _} | _] = opts) do
     relevant = take_sorted(opts, [:module, :mode, :shape])
     other = opts -- relevant
@@ -38,27 +40,27 @@ defmodule Zodish.Type.Struct do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Creates a new Struct type.
+  """
   def new(module, %{} = shape) when is_atom(module), do: new(module: module, mode: :strict, shape: shape)
   def new([{_, _} | _] = opts, %{} = shape), do: new(opts ++ [shape: shape])
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Struct type.
+  """
   def coerce(%TStruct{} = type, value \\ true)
       when is_boolean(value),
       do: %TStruct{type | coerce: value}
 
-  @doc false
   def module(%TStruct{} = type, mod)
       when is_atom(mod),
       do: %TStruct{type | module: mod}
 
-  @doc false
   def strip(%TStruct{} = type), do: %TStruct{type | mode: :strip}
 
-  @doc false
   def strict(%TStruct{} = type), do: %TStruct{type | mode: :strict}
 
-  @doc false
   def shape(%TStruct{} = type, %{} = shape)
       when is_non_struct_map(shape) and map_size(shape) > 0 do
     struct_keys = Map.keys(struct!(type.module, []))

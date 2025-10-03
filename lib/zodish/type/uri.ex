@@ -1,7 +1,6 @@
 defmodule Zodish.Type.URI do
   alias __MODULE__, as: TUri
 
-  @typedoc false
   @type t() :: %TUri{
           schemes: [String.t()],
           trailing_slash: :keep | :trim | :enforce
@@ -10,7 +9,9 @@ defmodule Zodish.Type.URI do
   defstruct schemes: [],
             trailing_slash: :keep
 
-  @doc false
+  @doc ~S"""
+  Creates a new URI (string) type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TUri{}, fn
       {:schemes, schemes}, type -> schemes(type, schemes)
@@ -19,12 +20,10 @@ defmodule Zodish.Type.URI do
     end)
   end
 
-  @doc false
   def schemes(%TUri{} = type, schemes)
       when is_list(schemes),
       do: %TUri{type | schemes: schemes}
 
-  @doc false
   def format_trailing_slash(%TUri{} = type, value)
       when value in [:keep, :trim, :enforce],
       do: %TUri{type | trailing_slash: value}

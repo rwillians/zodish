@@ -9,7 +9,9 @@ defmodule Zodish.Type.Any do
 
   defstruct []
 
-  @doc false
+  @doc ~S"""
+  Creates a new Any type.
+  """
   def new, do: %TAny{}
 end
 

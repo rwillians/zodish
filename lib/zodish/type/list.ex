@@ -20,7 +20,9 @@ defmodule Zodish.Type.List do
             min_length: nil,
             max_length: nil
 
-  @doc false
+  @doc ~S"""
+  Creates a new List type.
+  """
   def new(%_{} = inner_type, opts \\ []) do
     Enum.reduce(opts, %TList{inner_type: inner_type}, fn
       {:exact_length, {value, opts}}, type -> exact_length(type, value, opts)
@@ -33,19 +35,16 @@ defmodule Zodish.Type.List do
     end)
   end
 
-  @doc false
   @opts [error: "expected list to have exactly {{exact_length | item}}, got {{actual_length | item}}"]
   def exact_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
 
-  @doc false
   @opts [error: "expected list to have at least {{min_length | item}}, got {{actual_length | item}}"]
   def min_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
       do: %{type | min_length: {value, merge_opts(@opts, opts)}}
 
-  @doc false
   @opts [error: "expected list to have at most {{max_length | item}}, got {{actual_length | item}}"]
   def max_length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,

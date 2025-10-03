@@ -17,7 +17,9 @@ defmodule Zodish.Type.Map do
             mode: :strip,
             shape: %{}
 
-  @doc false
+  @doc ~S"""
+  Creates a new Map type.
+  """
   def new([{_, _} | _] = opts) do
     Enum.reduce(opts, %TMap{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -29,23 +31,24 @@ defmodule Zodish.Type.Map do
   end
   def new(%{} = shape), do: new(mode: :strip, shape: shape)
 
-  @doc false
+  @doc ~S"""
+  Creates a new Map type.
+  """
   def new(:strip, %{} = shape), do: new(mode: :strip, shape: shape)
   def new(:strict, %{} = shape), do: new(mode: :strict, shape: shape)
   def new([{_, _} | _] = opts, %{} = shape), do: new(opts ++ [shape: shape])
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Map type.
+  """
   def coerce(%TMap{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @doc false
   def strip(%TMap{} = type), do: %{type | mode: :strip}
 
-  @doc false
   def strict(%TMap{} = type), do: %{type | mode: :strict}
 
-  @doc false
   def shape(%TMap{} = type, %{} = shape)
       when is_non_struct_map(shape) and map_size(shape) > 0,
       do: %{type | shape: shape}

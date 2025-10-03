@@ -21,7 +21,9 @@ defmodule Zodish.Type.Number do
             lt: nil,
             lte: nil
 
-  @doc false
+  @doc ~S"""
+  Creates a new Number type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TNumber{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -37,30 +39,28 @@ defmodule Zodish.Type.Number do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Number type.
+  """
   def coerce(%TNumber{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}
 
-  @doc false
   @opts [error: "expected a number greater than {{gt}}, got {{value}}"]
   def gt(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | gt: {value, merge_opts(@opts, opts)}}
 
-  @doc false
   @opts [error: "expected a number greater than or equal to {{gte}}, got {{value}}"]
   def gte(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | gte: {value, merge_opts(@opts, opts)}}
 
-  @doc false
   @opts [error: "expected a number less than {{lt}}, got {{value}}"]
   def lt(%TNumber{} = type, value, opts \\ [])
       when is_number(value),
       do: %{type | lt: {value, merge_opts(@opts, opts)}}
 
-  @doc false
   @opts [error: "expected a number less than or equal to {{lte}}, got {{value}}"]
   def lte(%TNumber{} = type, value, opts \\ [])
       when is_number(value),

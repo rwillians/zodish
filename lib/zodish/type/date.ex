@@ -11,7 +11,9 @@ defmodule Zodish.Type.Date do
 
   defstruct coerce: false
 
-  @doc false
+  @doc ~S"""
+  Creates a new Date type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TDate{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -19,7 +21,9 @@ defmodule Zodish.Type.Date do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Date type.
+  """
   def coerce(%TDate{} = type, value \\ true)
       when is_boolean(value),
       do: %{type | coerce: value}

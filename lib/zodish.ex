@@ -297,35 +297,35 @@ defmodule Zodish do
   - `:rfc5322` - same rules as the classic emailregex.com (RFC 5322); and
   - `:unicode` - a loose set of rules that allows Unicode (good for intl emails);
 
-      iex> Z.email(ruleset: :gmail)
-      iex> |> Z.parse("foo@bar.com")
-      {:ok, "foo@bar.com"}
+        iex> Z.email(ruleset: :gmail)
+        iex> |> Z.parse("foo@bar.com")
+        {:ok, "foo@bar.com"}
 
-      iex> Z.email(ruleset: :html5)
-      iex> |> Z.parse("foo@bar.com")
-      {:ok, "foo@bar.com"}
+        iex> Z.email(ruleset: :html5)
+        iex> |> Z.parse("foo@bar.com")
+        {:ok, "foo@bar.com"}
 
-      iex> Z.email(ruleset: :rfc5322)
-      iex> |> Z.parse("foo@bar.com")
-      {:ok, "foo@bar.com"}
+        iex> Z.email(ruleset: :rfc5322)
+        iex> |> Z.parse("foo@bar.com")
+        {:ok, "foo@bar.com"}
 
-      iex> Z.email(ruleset: :unicode)
-      iex> |> Z.parse("foo@bar.com")
-      {:ok, "foo@bar.com"}
+        iex> Z.email(ruleset: :unicode)
+        iex> |> Z.parse("foo@bar.com")
+        {:ok, "foo@bar.com"}
 
   ## Errors
 
   When the given string is empty:
 
-      iex> Z.email()
-      iex> |> Z.parse("")
-      {:error, %Zodish.Issue{message: "cannot be empty"}}
+        iex> Z.email()
+        iex> |> Z.parse("")
+        {:error, %Zodish.Issue{message: "cannot be empty"}}
 
   When the given string is not a valid email address:
 
-      iex> Z.email()
-      iex> |> Z.parse("foo@")
-      {:error, %Zodish.Issue{message: "invalid email address"}}
+        iex> Z.email()
+        iex> |> Z.parse("foo@")
+        {:error, %Zodish.Issue{message: "invalid email address"}}
 
   """
   @spec email(opts :: [option]) :: TEmail.t()

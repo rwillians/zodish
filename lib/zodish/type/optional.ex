@@ -15,7 +15,9 @@ defmodule Zodish.Type.Optional do
   defstruct inner_type: nil,
             default: nil
 
-  @doc false
+  @doc ~S"""
+  Makes the given `inner_type` optional (either missing or nullable).
+  """
   def new(%_{} = inner_type, opts \\ []) do
     Enum.reduce(opts, %TOptional{inner_type: inner_type}, fn
       {:default, value}, type -> default(type, value)
@@ -23,7 +25,11 @@ defmodule Zodish.Type.Optional do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Assigns a default value to be used when the value is either missing
+  or nil. Alternatively, you can provide a zero-arity function or an
+  MFA that should generate the default value.
+  """
   def default(%TOptional{} = type, {m, f, a})
       when is_atom(m) and is_atom(f) and is_list(a),
       do: %{type | default: {m, f, a}}
@@ -32,7 +38,6 @@ defmodule Zodish.Type.Optional do
       when is_function(value, 0),
       do: %{type | default: value}
 
-  @doc false
   def default(%TOptional{} = type, value) do
     case Zodish.Type.parse(type.inner_type, value) do
       {:ok, value} -> %{type | default: value}

@@ -11,7 +11,9 @@ defmodule Zodish.Type.Atom do
 
   defstruct coerce: false
 
-  @doc false
+  @doc ~S"""
+  Creates a new Atom type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TAtom{}, fn
       {:coerce, value}, type -> coerce(type, value)
@@ -19,7 +21,9 @@ defmodule Zodish.Type.Atom do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Atom type.
+  """
   def coerce(%TAtom{} = type, value \\ true)
       when is_boolean(value)
       when value == :unsafe,

@@ -11,7 +11,9 @@ defmodule Zodish.Type.Boolean do
 
   defstruct coerce: false
 
-  @doc false
+  @doc ~S"""
+  Creates a new Boolean type.
+  """
   def new(opts \\ []) do
     Enum.reduce(opts, %TBoolean{}, fn
       {:coerce, coerce}, type -> coerce(type, coerce)
@@ -19,7 +21,9 @@ defmodule Zodish.Type.Boolean do
     end)
   end
 
-  @doc false
+  @doc ~S"""
+  Either enables or disables coercion for the given Boolean type.
+  """
   def coerce(%TBoolean{} = type, value \\ true)
       when is_boolean(value),
       do: %TBoolean{type | coerce: value}
