@@ -3,6 +3,26 @@
 **Zodish** is a schema parser and validator library heavily inspired
 by JavaScript's [Zod](https://zod.dev).
 
+```elixir
+alias Zodish, as: Z
+
+@schema Z.map(%{
+          type:
+            Z.enum([:person, :company])
+            |> Z.coerce()
+            |> Z.optional(default: :person),
+          name: Z.string(trim: true, min_length: 1, max_length: 100),
+          email: Z.email(),
+          phone:
+            Z.string(regex: {~r/^\+\d{7,15}/, error: "invalid phone number"})
+            |> Z.optional()
+        })
+
+def parse(input) do
+  Z.parse(@schema, input)
+end
+```
+
 See the full [documentation](https://hexdocs.pm/zodish) at hexdocs.
 
 
