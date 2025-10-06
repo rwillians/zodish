@@ -221,9 +221,61 @@ defmodule Zodish do
       iex> |> Z.parse("2025-06-27T12:00:00.000Z")
       {:ok, ~U[2025-06-27T12:00:00.000Z]}
 
+  You can use `:after` to ensure the given date-time is after a
+  certain timestamp.
+
+      iex> Z.datetime(after: ~U[2030-01-01T00:00:00.000Z])
+      iex> |> Z.parse(~U[2031-06-27T12:00:00.000Z])
+      {:ok, ~U[2031-06-27T12:00:00.000Z]}
+
+      iex> Z.datetime(after: ~U[2030-01-01T00:00:00.000Z])
+      iex> |> Z.parse(~U[2025-06-27T12:00:00.000Z])
+      {:error, %Zodish.Issue{message: "must be after 2030-01-01 00:00:00.000Z"}}
+
+  Alternatively you can provide an MFA tuple or a function that
+  returns a `DateTime`:
+
+      iex> Z.datetime(after: {DateTime, :utc_now, []})
+      iex> |> Z.parse(~U[2030-01-01T00:00:00.000Z])
+      {:ok, ~U[2030-01-01T00:00:00.000Z]}
+
+      iex> Z.datetime(after: (fn -> DateTime.utc_now() end))
+      iex> |> Z.parse(~U[2030-01-01T00:00:00.000Z])
+      {:ok, ~U[2030-01-01T00:00:00.000Z]}
+
+  You can also provide a relative time:
+
+      iex> {:ok, _} =
+      iex>   Z.datetime(after: {15, :minute, :from_now})
+      iex>   |> Z.parse(DateTime.add(DateTime.utc_now(), 16, :minute))
+
+      iex> {:error, _} =
+      iex>   Z.datetime(after: {15, :minute, :from_now})
+      iex>   |> Z.parse(DateTime.add(DateTime.utc_now(), 14, :minute))
+
+  Likewise, you can use `:before` to ensure the given date-time is
+  before the given timestamp.
+
+      iex> {:ok, _} =
+      iex>   Z.datetime(before: {15, :minute, :from_now})
+      iex>   |> Z.parse(DateTime.add(DateTime.utc_now(), 14, :minute))
+
+      iex> {:error, _} =
+      iex>   Z.datetime(before: {15, :minute, :from_now})
+      iex>   |> Z.parse(DateTime.add(DateTime.utc_now(), 16, :minute))
+
   """
   @spec datetime(opts :: [option]) :: TDateTime.t()
-        when option: {:coerce, boolean()}
+        when option:
+          {:coerce, boolean()}
+          | {:after, DateTime.t()}
+          | {:after, mfa()}
+          | {:after, (-> DateTime.t())}
+          | {:after, {{n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year}} | :from_now}
+          | {:before, DateTime.t()}
+          | {:before, mfa()}
+          | {:before, (-> DateTime.t())}
+          | {:before, {{n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year}}, :from_now}
 
   defdelegate datetime(opts \\ []), to: TDateTime, as: :new
 
