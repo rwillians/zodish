@@ -271,11 +271,11 @@ defmodule Zodish do
           | {:after, DateTime.t()}
           | {:after, mfa()}
           | {:after, (-> DateTime.t())}
-          | {:after, {{n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year}} | :from_now}
+          | {:after, {n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year, :from_now}}
           | {:before, DateTime.t()}
           | {:before, mfa()}
           | {:before, (-> DateTime.t())}
-          | {:before, {{n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year}}, :from_now}
+          | {:before, {n ::integer(), unit :: :millisecond | :second | :minute | :hour | :day | :week | :month | :year, :from_now}}
 
   defdelegate datetime(opts \\ []), to: TDateTime, as: :new
 
