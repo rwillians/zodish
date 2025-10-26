@@ -50,3 +50,8 @@ near future:
 - [ ] ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
 - [ ] Explicitly allow or forbid **localhost** on `Zodish.Type.URL`;
 - [ ] Define what ports (enumerated or range) are allowed on `Zodish.Type.URL`;
+- [x] Normalize `:min_length`, `:exact_length` and `:max_length` on
+      `Zodish.Type.String` and `Zodish.Type.List` to `:min`, `:length`
+      and `:max` respectively;
+- [ ] Add support for internationalized error messages;
+- [ ] Make it possible to transform field names shown in `Zodish.Issue` messages;
