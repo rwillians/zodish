@@ -26,7 +26,7 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Creates a new issue with the given message.
 
-      iex> Zodish.Issue.issue("An error occurred")
+      iex> issue("An error occurred")
       %Zodish.Issue{message: "An error occurred"}
 
   """
@@ -40,8 +40,17 @@ defmodule Zodish.Issue do
   Creates a new issue after replacing any variables in the given
   message for their value in the given context map.
 
-      iex> Zodish.Issue.issue("The value of {{key}} is invalid", %{key: "foo"})
+      iex> issue("The value of {{key}} is invalid", %{key: "foo"})
       %Zodish.Issue{message: "The value of foo is invalid"}
+
+  You can also use pluralization slots that can automatically
+  pluralize words based on a numeric context variable:
+
+      iex> issue("At least {{count | item}} required", %{count: 1})
+      %Zodish.Issue{message: "At least 1 item required"}
+
+      iex> issue("At least {{count | item}} required", %{count: 2})
+      %Zodish.Issue{message: "At least 2 items required"}
 
   """
   @spec issue(message :: String.t(), ctx :: map()) :: t()
@@ -74,7 +83,7 @@ defmodule Zodish.Issue do
   Appends a set of segments to the given issue's path.
 
       iex> %Zodish.Issue{path: ["a"], message: "An error occurred"}
-      iex> |> Zodish.Issue.append_path([:b, :c])
+      iex> |> append_path([:b, :c])
       %Zodish.Issue{path: ["a", "b", "c"], message: "An error occurred"}
 
   """
@@ -88,7 +97,7 @@ defmodule Zodish.Issue do
   Prepends a set of segments to the given issue's path.
 
       iex> %Zodish.Issue{path: ["c"], message: "An error occurred"}
-      iex> |> Zodish.Issue.prepend_path([:a, :b])
+      iex> |> prepend_path([:a, :b])
       %Zodish.Issue{path: ["a", "b", "c"], message: "An error occurred"}
 
   """
@@ -101,7 +110,7 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Flattens the issues of a given `Zodish.Issue` struct.
 
-      iex> Zodish.Issue.flatten(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex> flatten(%Zodish.Issue{message: "One or more items failed validation", issues: [
       iex>   %Zodish.Issue{
       iex>     path: ["0"],
       iex>     message: "One or more fields failed validation",
@@ -140,7 +149,7 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Calculates the parse score of a given parsed value.
 
-      iex> Zodish.Issue.parse_score(%{ # +1
+      iex> parse_score(%{ # +1
       iex>   foo: [ # +1
       iex>     %{bar: :bar}, # +2
       iex>     %{baz: {:ok, :baz}} # +4

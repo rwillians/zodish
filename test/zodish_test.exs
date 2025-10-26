@@ -12,6 +12,6 @@ defmodule ZodishTest do
   end
 
   doctest Zodish.Helpers, import: true
-  doctest Zodish.Issue
+  doctest Zodish.Issue, import: true
   doctest Zodish
 end
