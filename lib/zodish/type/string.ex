@@ -3,6 +3,7 @@ defmodule Zodish.Type.String do
   This module describes a Zodish string type.
   """
 
+  import Kernel, except: [min: 2, max: 2]
   import Zodish.Option, only: [merge_opts: 2]
 
   alias __MODULE__, as: TString
@@ -12,9 +13,9 @@ defmodule Zodish.Type.String do
           trim: boolean(),
           downcase: boolean(),
           upcase: boolean(),
-          exact_length: Zodish.Option.t(non_neg_integer()) | nil,
-          min_length: Zodish.Option.t(non_neg_integer()) | nil,
-          max_length: Zodish.Option.t(non_neg_integer()) | nil,
+          length: Zodish.Option.t(non_neg_integer()) | nil,
+          min: Zodish.Option.t(non_neg_integer()) | nil,
+          max: Zodish.Option.t(non_neg_integer()) | nil,
           starts_with: Zodish.Option.t(String.t()) | nil,
           ends_with: Zodish.Option.t(String.t()) | nil,
           regex: Zodish.Option.t(Regex.t()) | nil
@@ -24,9 +25,9 @@ defmodule Zodish.Type.String do
             trim: false,
             downcase: false,
             upcase: false,
-            exact_length: nil,
-            min_length: nil,
-            max_length: nil,
+            length: nil,
+            min: nil,
+            max: nil,
             starts_with: nil,
             ends_with: nil,
             regex: nil
@@ -40,12 +41,12 @@ defmodule Zodish.Type.String do
       {:trim, value}, type -> trim(type, value)
       {:downcase, value}, type -> downcase(type, value)
       {:upcase, value}, type -> upcase(type, value)
-      {:exact_length, {value, opts}}, type -> exact_length(type, value, opts)
-      {:exact_length, value}, type -> exact_length(type, value)
-      {:min_length, {value, opts}}, type -> min_length(type, value, opts)
-      {:min_length, value}, type -> min_length(type, value)
-      {:max_length, {value, opts}}, type -> max_length(type, value, opts)
-      {:max_length, value}, type -> max_length(type, value)
+      {:length, {value, opts}}, type -> length(type, value, opts)
+      {:length, value}, type -> length(type, value)
+      {:min, {value, opts}}, type -> min(type, value, opts)
+      {:min, value}, type -> min(type, value)
+      {:max, {value, opts}}, type -> max(type, value, opts)
+      {:max, value}, type -> max(type, value)
       {:starts_with, {value, opts}}, type -> starts_with(type, value, opts)
       {:starts_with, value}, type -> starts_with(type, value)
       {:ends_with, {value, opts}}, type -> ends_with(type, value, opts)
@@ -90,20 +91,20 @@ defmodule Zodish.Type.String do
       when is_boolean(value),
       do: %{type | upcase: value}
 
-  @opts [error: "expected string to have exactly {{exact_length | character}}, got {{actual_length | character}}"]
-  def exact_length(%TString{} = type, value, opts \\ [])
+  @opts [error: "expected string to have exactly {{length | character}}, got {{actual_length | character}}"]
+  def length(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected string to have at least {{min_length | character}}, got {{actual_length | character}}"]
-  def min_length(%TString{} = type, value, opts \\ [])
+  @opts [error: "expected string to have at least {{min | character}}, got {{actual_length | character}}"]
+  def min(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | min_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | min: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected string to have at most {{max_length | character}}, got {{actual_length | character}}"]
-  def max_length(%TString{} = type, value, opts \\ [])
+  @opts [error: "expected string to have at most {{max | character}}, got {{actual_length | character}}"]
+  def max(%TString{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | max_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | max: {value, merge_opts(@opts, opts)}}
 
   @opts [error: "expected string to start with \"{{prefix}}\", got \"{{value}}\""]
   def starts_with(%TString{} = type, value, opts \\ [])
@@ -134,9 +135,9 @@ defimpl Zodish.Type, for: Zodish.Type.String do
          {:ok, value} <- trim(type, value),
          {:ok, value} <- downcase(type, value),
          {:ok, value} <- upcase(type, value),
-         :ok <- validate_exact_length(type, value),
-         :ok <- validate_min_length(type, value),
-         :ok <- validate_max_length(type, value),
+         :ok <- validate_length(type, value),
+         :ok <- validate_min(type, value),
+         :ok <- validate_max(type, value),
          :ok <- validate_starts_with(type, value),
          :ok <- validate_ends_with(type, value),
          :ok <- validate_regex(type, value),
@@ -170,33 +171,33 @@ defimpl Zodish.Type, for: Zodish.Type.String do
   defp upcase(%{upcase: false}, value), do: {:ok, value}
   defp upcase(%{upcase: true}, value), do: {:ok, String.upcase(value)}
 
-  defp validate_exact_length(%{exact_length: nil}, _), do: :ok
-  defp validate_exact_length(%{exact_length: {exact_length, opts}}, value) do
+  defp validate_length(%{length: nil}, _), do: :ok
+  defp validate_length(%{length: {length, opts}}, value) do
     actual_length = String.length(value)
 
-    case actual_length == exact_length do
+    case actual_length == length do
       true -> :ok
-      false -> {:error, issue(opts.error, %{exact_length: exact_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{length: length, actual_length: actual_length})}
     end
   end
 
-  defp validate_min_length(%{min_length: nil}, _), do: :ok
-  defp validate_min_length(%{min_length: {min_length, opts}}, value) do
+  defp validate_min(%{min: nil}, _), do: :ok
+  defp validate_min(%{min: {min, opts}}, value) do
     actual_length = String.length(value)
 
-    case actual_length >= min_length do
+    case actual_length >= min do
       true -> :ok
-      false -> {:error, issue(opts.error, %{min_length: min_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{min: min, actual_length: actual_length})}
     end
   end
 
-  defp validate_max_length(%{max_length: nil}, _), do: :ok
-  defp validate_max_length(%{max_length: {max_length, opts}}, value) do
+  defp validate_max(%{max: nil}, _), do: :ok
+  defp validate_max(%{max: {max, opts}}, value) do
     actual_length = String.length(value)
 
-    case actual_length <= max_length do
+    case actual_length <= max do
       true -> :ok
-      false -> {:error, issue(opts.error, %{max_length: max_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{max: max, actual_length: actual_length})}
     end
   end
 

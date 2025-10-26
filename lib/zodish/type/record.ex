@@ -16,7 +16,7 @@ defmodule Zodish.Type.Record do
   """
   def new(opts \\ []) do
     type = %TRecord{
-      keys_schema: TString.new(min_length: 1),
+      keys_schema: TString.new(min: 1),
       values_schema: TAny.new()
     }
 

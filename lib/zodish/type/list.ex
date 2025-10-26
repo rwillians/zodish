@@ -3,6 +3,7 @@ defmodule Zodish.Type.List do
   This module describes a Zodish list type.
   """
 
+  import Kernel, except: [min: 2, max: 2]
   import Zodish.Option, only: [merge_opts: 2]
 
   alias __MODULE__, as: TList
@@ -10,45 +11,45 @@ defmodule Zodish.Type.List do
   @type t() :: t(Zodish.Type.t())
   @type t(inner_type) :: %TList{
           inner_type: inner_type,
-          exact_length: Zodish.Option.t(non_neg_integer()) | nil,
-          min_length: Zodish.Option.t(non_neg_integer()) | nil,
-          max_length: Zodish.Option.t(non_neg_integer()) | nil
+          length: Zodish.Option.t(non_neg_integer()) | nil,
+          min: Zodish.Option.t(non_neg_integer()) | nil,
+          max: Zodish.Option.t(non_neg_integer()) | nil
         }
 
   defstruct inner_type: nil,
-            exact_length: nil,
-            min_length: nil,
-            max_length: nil
+            length: nil,
+            min: nil,
+            max: nil
 
   @doc ~S"""
   Creates a new List type.
   """
   def new(%_{} = inner_type, opts \\ []) do
     Enum.reduce(opts, %TList{inner_type: inner_type}, fn
-      {:exact_length, {value, opts}}, type -> exact_length(type, value, opts)
-      {:exact_length, value}, type -> exact_length(type, value)
-      {:min_length, {value, opts}}, type -> min_length(type, value, opts)
-      {:min_length, value}, type -> min_length(type, value)
-      {:max_length, {value, opts}}, type -> max_length(type, value, opts)
-      {:max_length, value}, type -> max_length(type, value)
+      {:length, {value, opts}}, type -> length(type, value, opts)
+      {:length, value}, type -> length(type, value)
+      {:min, {value, opts}}, type -> min(type, value, opts)
+      {:min, value}, type -> min(type, value)
+      {:max, {value, opts}}, type -> max(type, value, opts)
+      {:max, value}, type -> max(type, value)
       {key, _}, _ -> raise(ArgumentError, "Unknown option #{inspect(key)} for Zodish.Type.List")
     end)
   end
 
-  @opts [error: "expected list to have exactly {{exact_length | item}}, got {{actual_length | item}}"]
-  def exact_length(%TList{} = type, value, opts \\ [])
+  @opts [error: "expected list to have exactly {{length | item}}, got {{actual_length | item}}"]
+  def length(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | exact_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | length: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected list to have at least {{min_length | item}}, got {{actual_length | item}}"]
-  def min_length(%TList{} = type, value, opts \\ [])
+  @opts [error: "expected list to have at least {{min | item}}, got {{actual_length | item}}"]
+  def min(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | min_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | min: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected list to have at most {{max_length | item}}, got {{actual_length | item}}"]
-  def max_length(%TList{} = type, value, opts \\ [])
+  @opts [error: "expected list to have at most {{max | item}}, got {{actual_length | item}}"]
+  def max(%TList{} = type, value, opts \\ [])
       when is_integer(value) and value >= 0,
-      do: %{type | max_length: {value, merge_opts(@opts, opts)}}
+      do: %{type | max: {value, merge_opts(@opts, opts)}}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.List do
@@ -63,9 +64,9 @@ defimpl Zodish.Type, for: Zodish.Type.List do
   def parse(%TList{} = type, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),
-         :ok <- validate_exact_length(type, value),
-         :ok <- validate_min_length(type, value),
-         :ok <- validate_max_length(type, value),
+         :ok <- validate_length(type, value),
+         :ok <- validate_min(type, value),
+         :ok <- validate_max(type, value),
          do: parse_items(type, value)
   end
 
@@ -85,33 +86,33 @@ defimpl Zodish.Type, for: Zodish.Type.List do
   end
   defp validate_type(value), do: {:error, issue("expected a list, got #{typeof(value)}")}
 
-  defp validate_exact_length(%TList{exact_length: nil}, _), do: :ok
-  defp validate_exact_length(%TList{exact_length: {exact_length, opts}}, value) do
+  defp validate_length(%TList{length: nil}, _), do: :ok
+  defp validate_length(%TList{length: {length, opts}}, value) do
     actual_length = length(value)
 
-    case actual_length == exact_length do
+    case actual_length == length do
       true -> :ok
-      false -> {:error, issue(opts.error, %{exact_length: exact_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{length: length, actual_length: actual_length})}
     end
   end
 
-  defp validate_min_length(%TList{min_length: nil}, _), do: :ok
-  defp validate_min_length(%TList{min_length: {min_length, opts}}, value) do
+  defp validate_min(%TList{min: nil}, _), do: :ok
+  defp validate_min(%TList{min: {min, opts}}, value) do
     actual_length = length(value)
 
-    case actual_length >= min_length do
+    case actual_length >= min do
       true -> :ok
-      false -> {:error, issue(opts.error, %{min_length: min_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{min: min, actual_length: actual_length})}
     end
   end
 
-  defp validate_max_length(%TList{max_length: nil}, _), do: :ok
-  defp validate_max_length(%TList{max_length: {max_length, opts}}, value) do
+  defp validate_max(%TList{max: nil}, _), do: :ok
+  defp validate_max(%TList{max: {max, opts}}, value) do
     actual_length = length(value)
 
-    case actual_length <= max_length do
+    case actual_length <= max do
       true -> :ok
-      false -> {:error, issue(opts.error, %{max_length: max_length, actual_length: actual_length})}
+      false -> {:error, issue(opts.error, %{max: max, actual_length: actual_length})}
     end
   end
 
