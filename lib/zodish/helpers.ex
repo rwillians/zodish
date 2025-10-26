@@ -6,6 +6,15 @@ defmodule Zodish.Helpers do
   import Keyword, only: [keyword?: 1]
   import String, only: [slice: 2, ends_with?: 2]
 
+  require Logger
+
+  @doc ~S"""
+  Alias to `Kernel.inspect/1`.
+  """
+  @spec i(value :: any()) :: String.t()
+
+  def i(value), do: inspect(value)
+
   @doc ~S"""
   Pluralizes a given word based on common English rules.
   """
@@ -124,4 +133,16 @@ defmodule Zodish.Helpers do
   def typeof(value) when is_pid(value), do: "pid"
   def typeof(value) when is_port(value), do: "port"
   def typeof(value) when is_reference(value), do: "reference"
+
+  @doc ~S"""
+  Prints a warning message the returns the value given as first
+  argument.
+  """
+  @spec warn(value, message :: String.t()) :: value
+        when value: any()
+
+  def warn(value, message) do
+    Logger.warning("[Zodish] #{message}")
+    value
+  end
 end

@@ -4,7 +4,8 @@ defmodule Zodish do
   JavaScript's Zod.
   """
 
-  # primitive types
+  import Zodish.Helpers, only: [i: 1]
+
   alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.Atom, as: TAtom
   alias Zodish.Type.Boolean, as: TBoolean
@@ -21,16 +22,16 @@ defmodule Zodish do
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.Record, as: TRecord
+  alias Zodish.Type.Refine, as: Refine
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Struct, as: TStruct
+  alias Zodish.Type.Transform, as: Transform
   alias Zodish.Type.Tuple, as: TTuple
   alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.URI, as: TUri
   alias Zodish.Type.Uuid, as: TUuid
 
-  # effect types
-  alias Zodish.Type.Refine, as: Refine
-  alias Zodish.Type.Transform, as: Transform
+  @on_unsupported_coercion Application.compile_env!(:zodish, :on_unsupported_coercion)
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -176,6 +177,25 @@ defmodule Zodish do
       iex> |> Z.parse("123")
       {:ok, 123}
 
+  If the given type doesn't support coercion but it encapsulates an
+  inner type, then the coercion will be applied to the inner type.
+
+      iex> Z.optional(Z.integer())
+      %Zodish.Type.Optional{
+        inner_type: %Zodish.Type.Integer{coerce: false}
+      }
+
+      iex> Z.optional(Z.integer())
+      iex> |> Z.coerce()
+      %Zodish.Type.Optional{
+        inner_type: %Zodish.Type.Integer{coerce: true}
+      }
+
+      iex> Z.optional(Z.integer())
+      iex> |> Z.coerce()
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
   """
   @spec coerce(type, value :: boolean() | :unsafe) :: type
         when type: TAtom.t()
@@ -184,6 +204,13 @@ defmodule Zodish do
 
   def coerce(type, value \\ true)
   def coerce(%mod{coerce: _} = type, value), do: apply(mod, :coerce, [type, value])
+  def coerce(%_{inner_type: inner_type} = type, value), do: %{type | inner_type: coerce(inner_type, value)}
+  case @on_unsupported_coercion do
+    :raise -> def coerce(%mod{}, _), do: raise(ArgumentError, "The type #{i(mod)} doesn't support coercion")
+    :warn -> def coerce(%mod{} = type, _), do: Zodish.Helpers.warn(type, "The type #{i(mod)} doesn't support coercion")
+    :ignore -> def coerce(%_{} = type, _), do: type
+    value -> raise(ArgumentError, "Invalid option #{i(value)} for config :on_unsupported_coercion, expected :raise, :warn or :ignore")
+  end
 
   @doc ~S"""
   Defines a date type.
@@ -1301,8 +1328,8 @@ defmodule Zodish do
         zip: "62701"
       }}
 
-  If your Zodish type includes a key that doesn't exist in the struct,
-  then an `ArgumentError` will be raised.
+  If your Zodish schema includes a key that doesn't exist in the
+  struct, then an `ArgumentError` will be raised.
 
       iex> Z.struct(Address, %{name: Z.string()})
       ** (ArgumentError) The shape key :name doesn't exist in struct ZodishTest.Address
