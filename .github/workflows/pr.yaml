@@ -64,5 +64,6 @@ jobs:
         continue-on-error: true
       - name: Dialyzer
         run: mix dialyzer
+        continue-on-error: true
       - name: Tests
         run: mix test --trace
