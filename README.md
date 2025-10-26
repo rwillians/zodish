@@ -45,7 +45,8 @@ end
 Here's a non-exhaustive list of feature that I intend to add in the
 near future:
 
-1. ***At least one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-2. ***At most one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-3. ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-4. ...
+- [ ] ***At least one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+- [ ] ***At most one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+- [ ] ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
+- [ ] Explicitly allow or forbid **localhost** on `Zodish.Type.URL`;
+- [ ] Define what ports (enumerated or range) are allowed on `Zodish.Type.URL`;
