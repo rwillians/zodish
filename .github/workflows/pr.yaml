@@ -64,6 +64,26 @@ jobs:
       - name: Code style
         run: mix format --check-formatted
         continue-on-error: true
+      - name: Tests
+        run: mix test --trace
+  static-analysis:
+    name: Static Analysis (Elixir v${{matrix.version.elixir}} with OTP v${{matrix.version.otp}})
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    #        ↑ Since this job is expensive, let's run it only if the
+    #          test job succeeds.
+    strategy:
+      matrix:
+        version:
+          - { elixir: '1.19.1-otp-28', otp: '28.1.1' }
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Elixir
+        uses: erlef/setup-elixir@e6d7c94229049569db56a7ad5a540c051a010af9 # v1.20.4
+        with:
+          elixir-version: ${{matrix.version.elixir}}
+          otp-version: ${{matrix.version.otp}}
       - name: Dialyzer cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -73,10 +93,8 @@ jobs:
             ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-
       - name: Dialyzer
         env: { MIX_ENV: dev }
-        #      ↑ For some reason it's failing when running on test env.
-        #        The downside of this is that the project will be
+        #      ↑ For some reason it's failing when running on test
+        #        env. The downside of this is that the project will be
         #        compiled again.
         run: mix dialyzer --format github
         continue-on-error: true
-      - name: Tests
-        run: mix test --trace
