@@ -79,6 +79,9 @@ jobs:
       matrix:
         version:
           - { elixir: '1.19.1-otp-28', otp: '28.1.1' }
+    env: { MIX_ENV: dev }
+    #      ↑ Because, for some reason, the dialyzer is failing when
+    #        running on the test environment.
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -87,6 +90,17 @@ jobs:
         with:
           elixir-version: ${{matrix.version.elixir}}
           otp-version: ${{matrix.version.otp}}
+      - name: Dependencies cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile
+        run: mix compile
       - name: Dialyzer cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -95,8 +109,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-
       - name: Dialyzer
-        env: { MIX_ENV: dev }
-        #      ↑ For some reason it's failing when running on test
-        #        env. The downside of this is that the project will be
-        #        compiled again.
         run: mix dialyzer --format github
