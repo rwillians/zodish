@@ -17,6 +17,7 @@ env:
 
 jobs:
   test:
+    name: Test (Elixir v${{matrix.version.elixir}} with OTP v${{matrix.version.otp}})
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
