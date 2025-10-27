@@ -72,6 +72,9 @@ jobs:
     needs: [ test ]
     #        ↑ Since this job is expensive, let's run it only if the
     #          test job succeeds.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
+      cancel-in-progress: true
     strategy:
       matrix:
         version:
