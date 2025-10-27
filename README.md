@@ -34,7 +34,7 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:zodish, "~> 0.1.0"}
+    {:zodish, "~> 0.2.0"}
   ]
 end
 ```
