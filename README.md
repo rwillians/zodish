@@ -11,7 +11,7 @@ alias Zodish, as: Z
             Z.enum([:person, :company])
             |> Z.coerce()
             |> Z.optional(default: :person),
-          name: Z.string(trim: true, min_length: 1, max_length: 100),
+          name: Z.string(trim: true, min: 1, max: 100),
           email: Z.email(),
           phone:
             Z.string(regex: {~r/^\+\d{7,15}$/, error: "invalid phone number"})
