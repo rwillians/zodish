@@ -67,11 +67,15 @@ jobs:
       - name: Dialyzer cache
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          path: .dialyzer
-          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-dialyzer-${{ github.ref }}
+          path: priv/plts
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-${{ github.ref }}
           restore-keys: |
-            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-dialyzer-
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-
       - name: Dialyzer
+        env: { MIX_ENV: dev }
+        #      ↑ For some reason it's failing when running on test env.
+        #        The downside of this is that the project will be
+        #        compiled again.
         run: mix dialyzer --format github
         continue-on-error: true
       - name: Tests
