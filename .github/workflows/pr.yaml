@@ -45,9 +45,9 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles('mix.lock') }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-mix-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-mix-
       - name: Install dependencies
         run: mix deps.get
       - name: Compile dependencies
@@ -56,9 +56,9 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: _build
-          key: ${{ runner.os }}-build-${{ hashFiles('mix.lock') }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-build-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-build-
       - name: Compile project
         run: mix compile --no-deps-check --return-errors --warnings-as-errors
       - name: Code style
