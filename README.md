@@ -40,18 +40,29 @@ end
 ```
 
 
-## Next up
+## Roadmap / Next up
 
 Here's a non-exhaustive list of feature that I intend to add in the
 near future:
 
-- [ ] ***At least one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-- [ ] ***At most one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-- [ ] ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-- [ ] Explicitly allow or forbid **localhost** on `Zodish.Type.URL`;
-- [ ] Define what ports (enumerated or range) are allowed on `Zodish.Type.URL`;
-- [x] Normalize `:min_length`, `:exact_length` and `:max_length` on
-      `Zodish.Type.String` and `Zodish.Type.List` to `:min`, `:length`
-      and `:max` respectively;
-- [ ] Add support for internationalized error messages;
-- [ ] Make it possible to transform field names shown in `Zodish.Issue` messages;
+| Priority | Feature                                                                                          | Since  |
+| -------: | :----------------------------------------------------------------------------------------------- | :----: |
+|        0 | Normalize options `:*_length` to just `:min`, `:length` and `:max` (String and List types)       | v0.2.0 |
+|        0 | Make it possible to transform field names shown in `Zodish.Issue` messages (e.g. to camelCase)   |        |
+|        1 | Add support for internationalization                                                             |        |
+|        1 | ***Dynamicly required fields***  (Map and Struct types)                                          |        |
+|        2 | Require ***at least one of*** fields (Map and Struct types)                                      |        |
+|        2 | Require ***at most one of*** fields (Map and Struct types)                                       |        |
+|        3 | Explicitly allow or forbid **localhost** (on URI type)                                           |        |
+|        3 | Define what ports (enumerated or range) are allowed (on URI type)                                |        |
+|        3 | Generate JSON Schema from a Zodish schema                                                        |        |
+|        3 | Introduce a Schema Registry to make it easier to retrieve, reuse reference and manage schemas    |        |
+
+Legend:
+
+| Priority | Description |
+| -------: | :---------- |
+|        0 | Very high   |
+|        1 | High        |
+|        2 | So so       |
+|        3 | Low         |
