@@ -4,7 +4,8 @@ defmodule Zodish do
   JavaScript's Zod.
   """
 
-  # primitive types
+  import Zodish.Helpers, only: [i: 1]
+
   alias Zodish.Type.Any, as: TAny
   alias Zodish.Type.Atom, as: TAtom
   alias Zodish.Type.Boolean, as: TBoolean
@@ -21,16 +22,16 @@ defmodule Zodish do
   alias Zodish.Type.Number, as: TNumber
   alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.Record, as: TRecord
+  alias Zodish.Type.Refine, as: Refine
   alias Zodish.Type.String, as: TString
   alias Zodish.Type.Struct, as: TStruct
+  alias Zodish.Type.Transform, as: Transform
   alias Zodish.Type.Tuple, as: TTuple
   alias Zodish.Type.Union, as: TUnion
   alias Zodish.Type.URI, as: TUri
   alias Zodish.Type.Uuid, as: TUuid
 
-  # effect types
-  alias Zodish.Type.Refine, as: Refine
-  alias Zodish.Type.Transform, as: Transform
+  @on_unsupported_coercion Application.compile_env!(:zodish, :on_unsupported_coercion)
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -176,6 +177,25 @@ defmodule Zodish do
       iex> |> Z.parse("123")
       {:ok, 123}
 
+  If the given type doesn't support coercion but it encapsulates an
+  inner type, then the coercion will be applied to the inner type.
+
+      iex> Z.optional(Z.integer())
+      %Zodish.Type.Optional{
+        inner_type: %Zodish.Type.Integer{coerce: false}
+      }
+
+      iex> Z.optional(Z.integer())
+      iex> |> Z.coerce()
+      %Zodish.Type.Optional{
+        inner_type: %Zodish.Type.Integer{coerce: true}
+      }
+
+      iex> Z.optional(Z.integer())
+      iex> |> Z.coerce()
+      iex> |> Z.parse("123")
+      {:ok, 123}
+
   """
   @spec coerce(type, value :: boolean() | :unsafe) :: type
         when type: TAtom.t()
@@ -184,6 +204,13 @@ defmodule Zodish do
 
   def coerce(type, value \\ true)
   def coerce(%mod{coerce: _} = type, value), do: apply(mod, :coerce, [type, value])
+  def coerce(%_{inner_type: inner_type} = type, value), do: %{type | inner_type: coerce(inner_type, value)}
+  case @on_unsupported_coercion do
+    :raise -> def coerce(%mod{}, _), do: raise(ArgumentError, "The type #{i(mod)} doesn't support coercion")
+    :warn -> def coerce(%mod{} = type, _), do: Zodish.Helpers.warn(type, "The type #{i(mod)} doesn't support coercion")
+    :ignore -> def coerce(%_{} = type, _), do: type
+    value -> raise(ArgumentError, "Invalid option #{i(value)} for config :on_unsupported_coercion, expected :raise, :warn or :ignore")
+  end
 
   @doc ~S"""
   Defines a date type.
@@ -422,28 +449,28 @@ defmodule Zodish do
   defdelegate enum(opts), to: TEnum, as: :new
 
   @doc ~S"""
-  Updates the given type's `:exact_length` option.
+  Updates the given type's `:length` option.
 
       iex> Z.integer()
-      iex> |> Z.list(exact_length: 1)
-      iex> |> Z.exact_length(2)
+      iex> |> Z.list(length: 1)
+      iex> |> Z.length(2)
       iex> |> Z.parse([1])
       {:error, %Zodish.Issue{message: "expected list to have exactly 2 items, got 1 item"}}
 
-      iex> Z.string(exact_length: 5)
-      iex> |> Z.exact_length(1)
+      iex> Z.string(length: 5)
+      iex> |> Z.length(1)
       iex> |> Z.parse("Hello")
       {:error, %Zodish.Issue{message: "expected string to have exactly 1 character, got 5 characters"}}
 
   """
-  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+  @spec length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
         when type: TList.t()
-  @spec exact_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+  @spec length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
         when type: TString.t()
 
-  def exact_length(type, length, opts \\ [])
-  def exact_length(%TList{} = type, length, opts), do: TList.exact_length(type, length, opts)
-  def exact_length(%TString{} = type, length, opts), do: TString.exact_length(type, length, opts)
+  def length(type, length, opts \\ [])
+  def length(%TList{} = type, length, opts), do: TList.length(type, length, opts)
+  def length(%TString{} = type, length, opts), do: TString.length(type, length, opts)
 
   @doc ~S"""
   Defines a float type.
@@ -576,30 +603,30 @@ defmodule Zodish do
 
   ## Options
 
-  You can use `:exact_length`, `:min_length` and `:max_length` to
+  You can use `:length`, `:min` and `:max` to
   constrain the length of the list.
 
-      iex> Z.list(Z.integer(), exact_length: 3)
+      iex> Z.list(Z.integer(), length: 3)
       iex> |> Z.parse([1, 2, 3, 4])
       {:error, %Zodish.Issue{message: "expected list to have exactly 3 items, got 4 items"}}
 
-      iex> Z.list(Z.integer(), min_length: 1)
+      iex> Z.list(Z.integer(), min: 1)
       iex> |> Z.parse([])
       {:error, %Zodish.Issue{message: "expected list to have at least 1 item, got 0 items"}}
 
-      iex> Z.list(Z.integer(), max_length: 3)
+      iex> Z.list(Z.integer(), max: 3)
       iex> |> Z.parse([1, 2, 3, 4])
       {:error, %Zodish.Issue{message: "expected list to have at most 3 items, got 4 items"}}
 
   """
   @spec list(inner_type :: Zodish.Type.t(), opts :: [option]) :: TList.t()
         when option:
-               {:exact_length, non_neg_integer()}
-               | {:exact_length, Zodish.Option.t(non_neg_integer())}
-               | {:min_length, non_neg_integer()}
-               | {:min_length, Zodish.Option.t(non_neg_integer())}
-               | {:max_length, non_neg_integer()}
-               | {:max_length, Zodish.Option.t(non_neg_integer())}
+               {:length, non_neg_integer()}
+               | {:length, Zodish.Option.t(non_neg_integer())}
+               | {:min, non_neg_integer()}
+               | {:min, Zodish.Option.t(non_neg_integer())}
+               | {:max, non_neg_integer()}
+               | {:max, Zodish.Option.t(non_neg_integer())}
 
   defdelegate list(inner_type, opts \\ []), to: TList, as: :new
 
@@ -672,28 +699,28 @@ defmodule Zodish do
   defdelegate map(mode_or_opts \\ :strip, shape), to: TMap, as: :new
 
   @doc ~S"""
-  Updates the given type's `:max_length` option.
+  Updates the given type's `:max` option.
 
       iex> Z.integer()
-      iex> |> Z.list(max_length: 3)
-      iex> |> Z.max_length(2)
+      iex> |> Z.list(max: 3)
+      iex> |> Z.max(2)
       iex> |> Z.parse([1, 2, 3])
       {:error, %Zodish.Issue{message: "expected list to have at most 2 items, got 3 items"}}
 
-      iex> Z.string(max_length: 3)
-      iex> |> Z.max_length(1)
+      iex> Z.string(max: 3)
+      iex> |> Z.max(1)
       iex> |> Z.parse("Foo")
       {:error, %Zodish.Issue{message: "expected string to have at most 1 character, got 3 characters"}}
 
   """
-  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+  @spec max(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
         when type: TList.t()
-  @spec max_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+  @spec max(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
         when type: TString.t()
 
-  def max_length(type, length, opts \\ [])
-  def max_length(%TList{} = type, length, opts), do: TList.max_length(type, length, opts)
-  def max_length(%TString{} = type, length, opts), do: TString.max_length(type, length, opts)
+  def max(type, length, opts \\ [])
+  def max(%TList{} = type, length, opts), do: TList.max(type, length, opts)
+  def max(%TString{} = type, length, opts), do: TString.max(type, length, opts)
 
   @doc ~S"""
   Merges two Map types into one, where `:mode` is inherited from the
@@ -752,28 +779,28 @@ defmodule Zodish do
   end
 
   @doc ~S"""
-  Updates the given type's `:min_length` option.
+  Updates the given type's `:min` option.
 
       iex> Z.integer()
-      iex> |> Z.list(min_length: 1)
-      iex> |> Z.min_length(2)
+      iex> |> Z.list(min: 1)
+      iex> |> Z.min(2)
       iex> |> Z.parse([1])
       {:error, %Zodish.Issue{message: "expected list to have at least 2 items, got 1 item"}}
 
-      iex> Z.string(min_length: 1)
-      iex> |> Z.min_length(6)
+      iex> Z.string(min: 1)
+      iex> |> Z.min(6)
       iex> |> Z.parse("Foo")
       {:error, %Zodish.Issue{message: "expected string to have at least 6 characters, got 3 characters"}}
 
   """
-  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
+  @spec min(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TList.t()
         when type: TList.t()
-  @spec min_length(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
+  @spec min(type, length :: non_neg_integer(), opts :: [{:error, String.t()}]) :: TString.t()
         when type: TString.t()
 
-  def min_length(type, length, opts \\ [])
-  def min_length(%TList{} = type, length, opts), do: TList.min_length(type, length, opts)
-  def min_length(%TString{} = type, length, opts), do: TString.min_length(type, length, opts)
+  def min(type, length, opts \\ [])
+  def min(%TList{} = type, length, opts), do: TList.min(type, length, opts)
+  def min(%TString{} = type, length, opts), do: TString.min(type, length, opts)
 
   @doc ~S"""
   Defines a number type.
@@ -854,12 +881,12 @@ defmodule Zodish do
                | {:trim, boolean()}
                | {:downcase, boolean()}
                | {:upcase, boolean()}
-               | {:exact_length, non_neg_integer()}
-               | {:exact_length, Zodish.Option.t(non_neg_integer())}
-               | {:min_length, non_neg_integer()}
-               | {:min_length, Zodish.Option.t(non_neg_integer())}
-               | {:max_length, non_neg_integer()}
-               | {:max_length, Zodish.Option.t(non_neg_integer())}
+               | {:length, non_neg_integer()}
+               | {:length, Zodish.Option.t(non_neg_integer())}
+               | {:min, non_neg_integer()}
+               | {:min, Zodish.Option.t(non_neg_integer())}
+               | {:max, non_neg_integer()}
+               | {:max, Zodish.Option.t(non_neg_integer())}
                | {:starts_with, String.t()}
                | {:starts_with, Zodish.Option.t(String.t())}
                | {:ends_with, String.t()}
@@ -1050,7 +1077,7 @@ defmodule Zodish do
   You can use the option `:keys` to default a schema for the keys in
   the record.
 
-      iex> Z.record(keys: Z.string(min_length: 1))
+      iex> Z.record(keys: Z.string(min: 1))
       iex> |> Z.parse(%{foo: "bar"})
       {:error, %Zodish.Issue{
         path: [],
@@ -1068,7 +1095,7 @@ defmodule Zodish do
   You can use the option `:values` to set a schema that will be used
   to parse the values in the record.
 
-      iex> Z.record(values: Z.string(min_length: 1))
+      iex> Z.record(values: Z.string(min: 1))
       iex> |> Z.parse(%{"foo" => ""})
       {:error, %Zodish.Issue{
         path: [],
@@ -1080,7 +1107,7 @@ defmodule Zodish do
   Alternatively you can pass a type as single argument to `Z.record/1`
   where it will be used as the :values types:
 
-      iex> Z.record(Z.string(min_length: 1))
+      iex> Z.record(Z.string(min: 1))
       iex> |> Z.parse(%{"foo" => ""})
       {:error, %Zodish.Issue{
         path: [],
@@ -1172,25 +1199,25 @@ defmodule Zodish do
 
   ## Options
 
-  You can use `:exact_length`, `:min_length` and `:max_length` to
+  You can use `:length`, `:min` and `:max` to
   constrain the length of the string.
 
-      iex> Z.string(exact_length: 3)
+      iex> Z.string(length: 3)
       iex> |> Z.parse("foobar")
       {:error, %Zodish.Issue{message: "expected string to have exactly 3 characters, got 6 characters"}}
 
-      iex> Z.string(min_length: 1)
+      iex> Z.string(min: 1)
       iex> |> Z.parse("")
       {:error, %Zodish.Issue{message: "expected string to have at least 1 character, got 0 characters"}}
 
-      iex> Z.string(max_length: 3)
+      iex> Z.string(max: 3)
       iex> |> Z.parse("foobar")
       {:error, %Zodish.Issue{message: "expected string to have at most 3 characters, got 6 characters"}}
 
   You can also use `:trim` to trim leading and trailing whitespaces
   from the string before validation.
 
-      iex> Z.string(trim: true, min_length: 1)
+      iex> Z.string(trim: true, min: 1)
       iex> |> Z.parse("   ")
       {:error, %Zodish.Issue{message: "expected string to have at least 1 character, got 0 characters"}}
 
@@ -1226,12 +1253,12 @@ defmodule Zodish do
                | {:trim, boolean()}
                | {:downcase, boolean()}
                | {:upcase, boolean()}
-               | {:exact_length, non_neg_integer()}
-               | {:exact_length, Zodish.Option.t(non_neg_integer())}
-               | {:min_length, non_neg_integer()}
-               | {:min_length, Zodish.Option.t(non_neg_integer())}
-               | {:max_length, non_neg_integer()}
-               | {:max_length, Zodish.Option.t(non_neg_integer())}
+               | {:length, non_neg_integer()}
+               | {:length, Zodish.Option.t(non_neg_integer())}
+               | {:min, non_neg_integer()}
+               | {:min, Zodish.Option.t(non_neg_integer())}
+               | {:max, non_neg_integer()}
+               | {:max, Zodish.Option.t(non_neg_integer())}
                | {:starts_with, String.t()}
                | {:starts_with, Zodish.Option.t(String.t())}
                | {:ends_with, String.t()}
@@ -1301,8 +1328,8 @@ defmodule Zodish do
         zip: "62701"
       }}
 
-  If your Zodish type includes a key that doesn't exist in the struct,
-  then an `ArgumentError` will be raised.
+  If your Zodish schema includes a key that doesn't exist in the
+  struct, then an `ArgumentError` will be raised.
 
       iex> Z.struct(Address, %{name: Z.string()})
       ** (ArgumentError) The shape key :name doesn't exist in struct ZodishTest.Address

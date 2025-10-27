@@ -1,7 +1,7 @@
 defmodule Zodish.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.2.0"
   @github "https://github.com/rwillians/zodish"
 
   @description """
@@ -32,7 +32,9 @@ defmodule Zodish.MixProject do
       dialyzer: [
         plt_add_apps: [:mix],
         plt_add_deps: :apps_direct,
-        flags: [:unmatched_returns, :error_handling, :underspecs]
+        flags: [:unmatched_returns, :error_handling, :underspecs],
+        plt_core_path: "priv/plts/core",
+        plt_local_path: "priv/plts/local"
       ]
     ]
   end
@@ -70,7 +72,7 @@ defmodule Zodish.MixProject do
 
   defp deps do
     [
-      {:dialyxir, "~> 1.4.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.38.2", only: [:dev, :docs], runtime: false},
       {:decimal, ">= 2.0.0"}
     ]

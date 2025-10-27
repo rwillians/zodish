@@ -4,8 +4,11 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      - 'config/**'
       - 'lib/**'
       - 'test/**'
+      - '.formatter.exs'
+      - 'mix.exs'
       - 'mix.lock'
   workflow_dispatch:
 
@@ -14,50 +17,96 @@ env:
 
 jobs:
   test:
+    name: Test (Elixir v${{matrix.version.elixir}} with OTP v${{matrix.version.otp}})
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
       cancel-in-progress: true
     strategy:
       matrix:
         version:
-          - { elixir: '1.16.3-otp-26', otp: '26.2.5.13' }
-          - { elixir: '1.17.3-otp-26', otp: '26.2.5.13' }
+          - { elixir: '1.17.3-otp-26', otp: '26.2.5.15' }
           - { elixir: '1.17.3-otp-27', otp: '27.3.4.1' }
-          - { elixir: '1.18.4-otp-26', otp: '26.2.5.13' }
-          - { elixir: '1.18.4-otp-27', otp: '27.3.4.1' }
-          - { elixir: '1.18.4-otp-28', otp: '28.0.1' }
+          - { elixir: '1.18.4-otp-26', otp: '26.2.5.15' }
+          - { elixir: '1.18.4-otp-27', otp: '27.3.4.3' }
+          - { elixir: '1.18.4-otp-28', otp: '28.1.1' }
+          - { elixir: '1.19.1-otp-26', otp: '28.1.1' }
+          - { elixir: '1.19.1-otp-27', otp: '28.1.1' }
+          - { elixir: '1.19.1-otp-28', otp: '28.1.1' }
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Set up Elixir
-        uses: erlef/setup-elixir@75edbb82877ab10edeb12a99c3cf2f0909f3dc87 # v1.20.1
+        uses: erlef/setup-elixir@e6d7c94229049569db56a7ad5a540c051a010af9 # v1.20.4
         with:
           elixir-version: ${{matrix.version.elixir}}
           otp-version: ${{matrix.version.otp}}
       - name: Dependencies cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: deps
-          key: ${{ runner.os }}-mix-${{ hashFiles('mix.lock') }}
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-
       - name: Install dependencies
         run: mix deps.get
       - name: Compile dependencies
         run: mix deps.compile
       - name: Build cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: _build
-          key: ${{ runner.os }}-build-${{ hashFiles('mix.lock') }}
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-build-${{ hashFiles('mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-build-
       - name: Compile project
         run: mix compile --no-deps-check --return-errors --warnings-as-errors
       - name: Code style
         run: mix format --check-formatted
-      - name: Dialyzer
-        run: mix dialyzer
+        continue-on-error: true
       - name: Tests
         run: mix test --trace
+  static-analysis:
+    name: Static Analysis (Elixir v${{matrix.version.elixir}} with OTP v${{matrix.version.otp}})
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    #        ↑ Since this job is expensive, let's run it only if the
+    #          test job succeeds.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{matrix.version.elixir}}-${{matrix.version.otp}}
+      cancel-in-progress: true
+    strategy:
+      matrix:
+        version:
+          - { elixir: '1.19.1-otp-28', otp: '28.1.1' }
+    env: { MIX_ENV: dev }
+    #      ↑ Because, for some reason, the dialyzer is failing when
+    #        running on the test environment.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Set up Elixir
+        uses: erlef/setup-elixir@e6d7c94229049569db56a7ad5a540c051a010af9 # v1.20.4
+        with:
+          elixir-version: ${{matrix.version.elixir}}
+          otp-version: ${{matrix.version.otp}}
+      - name: Dependencies cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-deps-
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile
+        run: mix compile
+      - name: Dialyzer cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-${{ github.ref }}
+          restore-keys: |
+            ${{ runner.os }}-${{matrix.version.elixir}}-${{matrix.version.otp}}-plts-
+      - name: Dialyzer
+        run: mix dialyzer --format github

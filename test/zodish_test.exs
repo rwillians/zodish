@@ -11,7 +11,7 @@ defmodule ZodishTest do
     def say(value), do: value
   end
 
-  doctest Zodish.Helpers
-  doctest Zodish.Issue
+  doctest Zodish.Helpers, import: true
+  doctest Zodish.Issue, import: true
   doctest Zodish
 end

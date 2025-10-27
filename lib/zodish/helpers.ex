@@ -4,15 +4,62 @@ defmodule Zodish.Helpers do
   """
 
   import Keyword, only: [keyword?: 1]
-  import String, only: [slice: 2, ends_with?: 2]
+  import String, only: [capitalize: 1, slice: 2, ends_with?: 2]
+
+  require Logger
+
+  @doc ~S"""
+  Alias to `Kernel.inspect/1`.
+  """
+  @spec i(value :: any()) :: String.t()
+
+  def i(value), do: inspect(value)
 
   @doc ~S"""
   Pluralizes a given word based on common English rules.
+
+      iex> pluralize("is")
+      "are"
+
+      iex> pluralize("Was")
+      "Were"
+
+      iex> pluralize("cat")
+      "cats"
+
+      iex> pluralize("baby")
+      "babies"
+
+      iex> pluralize("box")
+      "boxes"
+
+      iex> pluralize("leaf")
+      "leaves"
+
+      iex> pluralize("man")
+      "men"
+
+      iex> pluralize("church")
+      "churches"
+
   """
   @spec pluralize(word :: String.t()) :: String.t()
 
+  @plural_exceptions [
+    {"is", "are"},
+    {"was", "were"},
+    {"has", "have"},
+    {"does", "do"},
+    {"doesn't", "don't"}
+  ]
+
+  @plurals_index @plural_exceptions
+                 |> Enum.flat_map(fn {s, p} -> [{s, p}, {capitalize(s), capitalize(p)}] end)
+                 |> Enum.into(%{})
+
   def pluralize(word) do
     cond do
+      Map.has_key?(@plurals_index, word) -> Map.fetch!(@plurals_index, word)
       ends_with?(word, "y") -> slice(word, 0..-2//1) <> "ies"
       ends_with?(word, "o") -> word <> "es"
       ends_with?(word, "s") -> word <> "es"
@@ -30,13 +77,13 @@ defmodule Zodish.Helpers do
   @doc ~S"""
   Pluralizes a word based on the given count.
 
-      iex> Zodish.Helpers.pluralize(1, "cat")
+      iex> pluralize(1, "cat")
       "cat"
 
-      iex> Zodish.Helpers.pluralize(0, "cat")
+      iex> pluralize(0, "cat")
       "cats"
 
-      iex> Zodish.Helpers.pluralize(2, "cat")
+      iex> pluralize(2, "cat")
       "cats"
 
   """
@@ -50,7 +97,7 @@ defmodule Zodish.Helpers do
   you provided them.
 
       iex> value =[foo: 1, bar: 2, baz: 3]
-      iex> Zodish.Helpers.take_sorted(value, [:bar, :baz, :foo])
+      iex> take_sorted(value, [:bar, :baz, :foo])
       [bar: 2, baz: 3, foo: 1]
 
   """
@@ -76,7 +123,7 @@ defmodule Zodish.Helpers do
       iex> to_string(Zodish.Type.Map)
       "Elixir.Zodish.Type.Map"
 
-      iex> Zodish.Helpers.to_mod_name(Zodish.Type.Map)
+      iex> to_mod_name(Zodish.Type.Map)
       "Zodish.Type.Map"
 
   """
@@ -124,4 +171,16 @@ defmodule Zodish.Helpers do
   def typeof(value) when is_pid(value), do: "pid"
   def typeof(value) when is_port(value), do: "port"
   def typeof(value) when is_reference(value), do: "reference"
+
+  @doc ~S"""
+  Prints a warning message the returns the value given as first
+  argument.
+  """
+  @spec warn(value, message :: String.t()) :: value
+        when value: any()
+
+  def warn(value, message) do
+    Logger.warning("[Zodish] #{message}")
+    value
+  end
 end

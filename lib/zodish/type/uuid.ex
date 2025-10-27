@@ -26,7 +26,7 @@ defimpl Zodish.Type, for: Zodish.Type.Uuid do
     regex = regex_for(schema.version)
 
     TString.new()
-    |> TString.exact_length(36)
+    |> TString.length(36)
     |> TString.regex(regex, error: "is invalid")
     |> Zodish.Type.parse(value)
   end

@@ -34,18 +34,37 @@ dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:zodish, "~> 0.1.0"}
+    {:zodish, "~> 0.2.0"}
   ]
 end
 ```
 
 
-## Next up
+## Roadmap / Next up
 
 Here's a non-exhaustive list of feature that I intend to add in the
 near future:
 
-1. ***At least one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-2. ***At most one of*** fields for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-3. ***Dynamic required fields*** for `Zodish.Type.Map` and `Zodish.Type.Struct`;
-4. ...
+| Priority | Feature                                                                                           | Affected types  | Since  |
+| -------: | :------------------------------------------------------------------------------------------------ | :-------------: | :----: |
+|        0 | Normalize options `:*_length` to just `:min`, `:length` and `:max`                                | String, List    | v0.2.0 |
+|        0 | Make it possible to transform field names shown in `Zodish.Issue` messages (e.g. to camelCase)    |                 |        |
+|        0 | Move generating the final `Zodish.Issue` message to `message/1` function of `Exception`           |                 |        |
+|        1 | **Dynamicly required fields**                                                                     | Map, Struct     |        |
+|        2 | Require **at least one of** fields                                                                | Map, Struct     |        |
+|        2 | Require **at most one of** fields                                                                 | Map, Struct     |        |
+|        2 | **Mutually inclusive** fields                                                                     | Map, Struct     |        |
+|        2 | Add support for internationalization                                                              |                 |        |
+|        3 | Explicitly allow or forbid **localhost**                                                          | URI             |        |
+|        3 | Define what ports (enumerated or range) are allowed                                               | URI             |        |
+|        3 | Generate JSON Schema from a Zodish schema                                                         |                 |        |
+|        3 | Introduce a Schema Registry to make it easier to retrieve, reuse reference and manage schemas     |                 |        |
+
+Legend:
+
+| Priority | Description |
+| -------: | :---------- |
+|        0 | Very high   |
+|        1 | High        |
+|        2 | So so       |
+|        3 | Low         |

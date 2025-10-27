@@ -18,21 +18,18 @@ defmodule Zodish.Type.Refine do
   """
   def new(%_{} = inner_type, fun, opts \\ [])
       when is_list(opts) do
-    Enum.reduce([{:fun, fun} | opts], %Refine{inner_type: inner_type}, fn
+    Keyword.put(opts, :fun, fun)
+    |> Enum.reduce(%Refine{inner_type: inner_type}, fn
       {:fun, fun}, type -> fun(type, fun)
       {:error, value}, type -> error(type, value)
       {key, _}, _ -> raise(ArgumentError, "Unknown option #{inspect(key)} for Zodish.Refine")
     end)
   end
 
+  def fun(%Refine{} = type, fun) when is_function(fun, 1), do: %{type | fun: fun}
+  def fun(%Refine{} = type, {m, f, a}) when is_atom(m) and is_atom(f) and is_list(a), do: %{type | fun: {m, f, a}}
+
   def error(%Refine{} = type, <<message::binary>>), do: %{type | error: message}
-
-  #
-  #  PRIVATE
-  #
-
-  defp fun(%Refine{} = type, fun) when is_function(fun, 1), do: %{type | fun: fun}
-  defp fun(%Refine{} = type, {m, f, a}) when is_atom(m) and is_atom(f) and is_list(a), do: %{type | fun: {m, f, a}}
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Refine do
@@ -58,6 +55,6 @@ defimpl Zodish.Type, for: Zodish.Type.Refine do
     end
   end
 
-  defp do_apply(fun, value) when is_function(fun, 1), do: apply(fun, [value])
   defp do_apply({m, f, a}, value), do: apply(m, f, [value | a])
+  defp do_apply(fun, value), do: apply(fun, [value])
 end
