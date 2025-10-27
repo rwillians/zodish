@@ -45,18 +45,20 @@ end
 Here's a non-exhaustive list of feature that I intend to add in the
 near future:
 
-| Priority | Feature                                                                                          | Since  |
-| -------: | :----------------------------------------------------------------------------------------------- | :----: |
-|        0 | Normalize options `:*_length` to just `:min`, `:length` and `:max` (String and List types)       | v0.2.0 |
-|        0 | Make it possible to transform field names shown in `Zodish.Issue` messages (e.g. to camelCase)   |        |
-|        1 | Add support for internationalization                                                             |        |
-|        1 | ***Dynamicly required fields***  (Map and Struct types)                                          |        |
-|        2 | Require ***at least one of*** fields (Map and Struct types)                                      |        |
-|        2 | Require ***at most one of*** fields (Map and Struct types)                                       |        |
-|        3 | Explicitly allow or forbid **localhost** (on URI type)                                           |        |
-|        3 | Define what ports (enumerated or range) are allowed (on URI type)                                |        |
-|        3 | Generate JSON Schema from a Zodish schema                                                        |        |
-|        3 | Introduce a Schema Registry to make it easier to retrieve, reuse reference and manage schemas    |        |
+| Priority | Feature                                                                                           | Affected types  | Since  |
+| -------: | :------------------------------------------------------------------------------------------------ | :-------------: | :----: |
+|        0 | Normalize options `:*_length` to just `:min`, `:length` and `:max`                                | String, List    | v0.2.0 |
+|        0 | Make it possible to transform field names shown in `Zodish.Issue` messages (e.g. to camelCase)    |                 |        |
+|        0 | Move generating the final `Zodish.Issue` message to `message/1` function of `Exception`           |                 |        |
+|        1 | **Dynamicly required fields**                                                                     | Map, Struct     |        |
+|        2 | Require **at least one of** fields                                                                | Map, Struct     |        |
+|        2 | Require **at most one of** fields                                                                 | Map, Struct     |        |
+|        2 | **Mutually inclusive** fields                                                                     | Map, Struct     |        |
+|        2 | Add support for internationalization                                                              |                 |        |
+|        3 | Explicitly allow or forbid **localhost**                                                          | URI             |        |
+|        3 | Define what ports (enumerated or range) are allowed                                               | URI             |        |
+|        3 | Generate JSON Schema from a Zodish schema                                                         |                 |        |
+|        3 | Introduce a Schema Registry to make it easier to retrieve, reuse reference and manage schemas     |                 |        |
 
 Legend:
 
