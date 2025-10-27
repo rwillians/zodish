@@ -97,4 +97,3 @@ jobs:
         #        env. The downside of this is that the project will be
         #        compiled again.
         run: mix dialyzer --format github
-        continue-on-error: true
