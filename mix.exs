@@ -32,7 +32,8 @@ defmodule Zodish.MixProject do
       dialyzer: [
         plt_add_apps: [:mix],
         plt_add_deps: :apps_direct,
-        flags: [:unmatched_returns, :error_handling, :underspecs]
+        flags: [:unmatched_returns, :error_handling, :underspecs],
+        plt_local_path: ".dialyzer/plts"
       ]
     ]
   end
