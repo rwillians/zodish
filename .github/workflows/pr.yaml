@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      - 'config/**'
       - 'lib/**'
       - 'test/**'
       - '.formatter.exs'
