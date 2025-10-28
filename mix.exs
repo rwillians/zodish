@@ -41,7 +41,7 @@ defmodule Zodish.MixProject do
 
   defp package do
     [
-      files: ~w(lib mix.exs README.md LICENSE),
+      files: ~w(config lib mix.exs README.md LICENSE),
       maintainers: ["Rafael Willians"],
       contributors: ["Rafael Willians"],
       licenses: ["MIT"],
