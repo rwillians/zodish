@@ -31,7 +31,7 @@ defmodule Zodish do
   alias Zodish.Type.URI, as: TUri
   alias Zodish.Type.Uuid, as: TUuid
 
-  @on_unsupported_coercion Application.compile_env!(:zodish, :on_unsupported_coercion)
+  @on_unsupported_coercion Application.compile_env(:zodish, :on_unsupported_coercion, :warn)
 
   @doc ~S"""
   Parses a value based on the given type.
