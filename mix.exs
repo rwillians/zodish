@@ -19,6 +19,7 @@ defmodule Zodish.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [debug_info: Mix.env() == :dev],
       build_embedded: Mix.env() not in [:dev, :test],
+      config_path: "config/config.exs",
       aliases: aliases(),
       package: package(),
       docs: [
