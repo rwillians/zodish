@@ -992,11 +992,35 @@ defmodule Zodish do
       iex> |> Z.parse(nil)
       {:ok, 42}
 
+  If you call `optional/1` on an already optional type, it will just
+  return the same type back:
+
+      iex> Z.string()
+      iex> |> Z.optional()
+      iex> |> Z.optional()
+      %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: nil}
+
+      iex> Z.string()
+      iex> |> Z.optional(default: "foo")
+      iex> |> Z.optional()
+      %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: "foo"}
+
+  If you call `optional/2` though (with a default value), it will
+  override the existing default value:
+
+      iex> Z.string()
+      iex> |> Z.optional()
+      iex> |> Z.optional(default: "foo")
+      %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: "foo"}
+
   """
   @spec optional(inner_type :: Zodish.Type.t(), opts :: [option]) :: TOptional.t()
         when option: {:default, (-> any()) | any() | nil}
 
-  defdelegate optional(inner_type, opts \\ []), to: TOptional, as: :new
+  def optional(inner_type, opts \\ [])
+  def optional(%TOptional{} = type, [default: _] = opts), do: TOptional.new(type.inner_type, opts)
+  def optional(%TOptional{} = type, []), do: type
+  def optional(%_{} = inner_type, opts), do: TOptional.new(inner_type, opts)
 
   @doc ~S"""
   Checks whether the given type is an optional type.
