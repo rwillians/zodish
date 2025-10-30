@@ -20,6 +20,7 @@ defmodule Zodish do
   alias Zodish.Type.Literal, as: TLiteral
   alias Zodish.Type.Map, as: TMap
   alias Zodish.Type.Number, as: TNumber
+  alias Zodish.Type.Numeric, as: TNumeric
   alias Zodish.Type.Optional, as: TOptional
   alias Zodish.Type.Record, as: TRecord
   alias Zodish.Type.Refine, as: Refine
@@ -871,41 +872,32 @@ defmodule Zodish do
       iex> |> Z.parse("a1b2c3")
       {:error, %Zodish.Issue{message: "must contain numbers only"}}
 
-  This is an alias to `Z.string/1` where it has a regex to match
-  numeric strings, therefore it accepts all the same options as
-  `Z.string/1` except for the :regex option.
+  You can constrain the number of digits by using the `:length`,
+  `:min` and `:max` options:
+
+      iex> Z.numeric(length: 3)
+      iex> |> Z.parse("1234")
+      {:error, %Zodish.Issue{message: "expected numeric string to have exactly 3 digits, got 4 digits"}}
+
+      iex> Z.numeric(min: 2)
+      iex> |> Z.parse("1")
+      {:error, %Zodish.Issue{message: "expected numeric string to have at least 2 digits, got 1 digit"}}
+
+      iex> Z.numeric(max: 3)
+      iex> |> Z.parse("1234")
+      {:error, %Zodish.Issue{message: "expected numeric string to have at most 3 digits, got 4 digits"}}
+
   """
   @spec numeric(opts :: [option]) :: TString.t()
         when option:
-               {:coerce, boolean()}
-               | {:trim, boolean()}
-               | {:downcase, boolean()}
-               | {:upcase, boolean()}
-               | {:length, non_neg_integer()}
+               {:length, non_neg_integer()}
                | {:length, Zodish.Option.t(non_neg_integer())}
                | {:min, non_neg_integer()}
                | {:min, Zodish.Option.t(non_neg_integer())}
                | {:max, non_neg_integer()}
                | {:max, Zodish.Option.t(non_neg_integer())}
-               | {:starts_with, String.t()}
-               | {:starts_with, Zodish.Option.t(String.t())}
-               | {:ends_with, String.t()}
-               | {:ends_with, Zodish.Option.t(String.t())}
 
-  @dialyzer {:nowarn_function, numeric: 0, numeric: 1}
-  #           ↑ because dialyzer was complaining about the spec having
-  #             "too many types for the function"
-  def numeric(opts \\ []) do
-    {regex, opts} = Keyword.pop(opts, :regex)
-
-    unless is_nil(regex),
-      do: raise(ArgumentError, message: "Not allowed to pass a regex to a numeric string type")
-
-    string([
-      {:regex, {~r/^[0-9]+$/, error: "must contain numbers only"}}
-      | opts
-    ])
-  end
+  defdelegate numeric(opts \\ []), to: TNumeric, as: :new
 
   @doc ~S"""
   Removes the specified keys from the type's shape.
