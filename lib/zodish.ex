@@ -1051,8 +1051,7 @@ defmodule Zodish do
   @spec optional?(type :: Zodish.Type.t()) :: boolean()
 
   def optional?(%TOptional{}), do: true
-  def optional?(%Refine{inner_type: %_{} = inner_type}), do: optional?(inner_type)
-  def optional?(%Transform{inner_type: %_{} = inner_type}), do: optional?(inner_type)
+  def optional?(%_{inner_type: %_{} = inner_type}), do: optional?(inner_type)
   def optional?(_), do: false
 
   @doc ~S"""
