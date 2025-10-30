@@ -34,6 +34,16 @@ defmodule Zodish do
 
   @on_unsupported_coercion Application.compile_env(:zodish, :on_unsupported_coercion, :warn)
 
+  @typedoc ~S"""
+  Any Zodish type that has a shape (i.e. `Zodish.Type.Map` and
+  `Zodish.Type.Struct`).
+  """
+  @type shaped() :: %{
+                      required(:__struct__) => module(),
+                      required(:shape) => %{required(atom()) => Zodish.Type.t()},
+                      optional(atom()) => any()
+                    }
+
   @doc ~S"""
   Parses a value based on the given type.
 
@@ -1066,7 +1076,7 @@ defmodule Zodish do
 
   """
   @spec partial(type) :: type
-        when type: Zodish.Type.Map.t() | Zodish.Type.Struct.t() | Zodish.Type.t()
+        when type: Zodish.Type.Map.t() | Zodish.Type.Struct.t() | shaped()
 
   def partial(%_{shape: %{}} = type) do
     shape =
