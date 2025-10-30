@@ -1054,6 +1054,38 @@ defmodule Zodish do
   def optional?(_), do: false
 
   @doc ~S"""
+  Makes all fields from the given type's shape optional (default nil).
+
+      iex> Z.map(%{line_1: Z.string(), line_2: Z.string()})
+      iex> |> Z.partial()
+      iex> |> Map.get(:shape)
+      %{
+        line_1: %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: nil},
+        line_2: %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: nil}
+      }
+
+      iex> Z.struct(Address, %{line_1: Z.string(), line_2: Z.string()})
+      iex> |> Z.partial()
+      iex> |> Map.get(:shape)
+      %{
+        line_1: %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: nil},
+        line_2: %Zodish.Type.Optional{inner_type: %Zodish.Type.String{}, default: nil}
+      }
+
+  """
+  @spec partial(type) :: type
+        when type: Zodish.Type.Map.t() | Zodish.Type.Struct.t() | Zodish.Type.t()
+
+  def partial(%_{shape: %{}} = type) do
+    shape =
+      type.shape
+      |> Enum.map(&{elem(&1, 0), optional(elem(&1, 1))})
+      |> Enum.into(%{})
+
+    %{type | shape: shape}
+  end
+
+  @doc ~S"""
   Keeps only the specified keys from the type's shape.
 
       iex> Z.map(%{name: Z.string(), age: Z.integer()})
