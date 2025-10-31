@@ -31,10 +31,14 @@ defimpl Zodish.Type, for: Zodish.Type.Uuid do
     |> Zodish.Type.parse(value)
   end
 
+  @impl Zodish.Type
+  def to_spec(%TUuid{}), do: {:<<>>, [], [{:"::", [], [{:_, [], Elixir}, 288]}]}
+
   #
   #   PRIVATE
   #
 
+  @compile {:inline, regex_for: 1}
   # Source: https://github.com/colinhacks/zod/blob/6176dcb570186c4945223fa83bcf3221cbfa1af5/packages/zod/src/v4/core/regexes.ts#L22-L28
   defp regex_for(:any), do: ~r/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000)$/
   defp regex_for(:v1), do: ~r/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-1[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$/

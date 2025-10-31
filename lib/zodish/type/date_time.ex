@@ -85,6 +85,9 @@ defimpl Zodish.Type, for: Zodish.Type.DateTime do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TDateTime{}), do: quote(do: DateTime.t())
+
   #
   #   PRIVATE
   #

@@ -20,4 +20,7 @@ defimpl Zodish.Type, for: Zodish.Type.Any do
 
   @impl Zodish.Type
   def parse(%TAny{}, value), do: {:ok, value}
+
+  @impl Zodish.Type
+  def to_spec(%TAny{}), do: quote(do: any())
 end

@@ -38,6 +38,9 @@ defimpl Zodish.Type, for: Zodish.Type.Tuple do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TTuple{elements: elms}), do: {:{}, [], Enum.map(elms, &Zodish.Type.to_spec/1)}
+
   #
   #   PRIVATE
   #

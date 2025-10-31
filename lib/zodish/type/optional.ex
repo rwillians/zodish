@@ -59,6 +59,10 @@ defimpl Zodish.Type, for: Zodish.Type.Optional do
   end
   def parse(%TOptional{} = type, value), do: Zodish.Type.parse(type.inner_type, value)
 
+  @impl Zodish.Type
+  def to_spec(%TOptional{default: nil} = type), do: {:|, [], [Zodish.Type.to_spec(type.inner_type), nil]}
+  def to_spec(%TOptional{} = type), do: Zodish.Type.to_spec(type.inner_type)
+
   #
   #   PRIVATE
   #

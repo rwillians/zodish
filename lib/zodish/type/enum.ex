@@ -67,6 +67,11 @@ defimpl Zodish.Type, for: Zodish.Type.Enum do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TEnum{values: [head]}), do: head
+  def to_spec(%TEnum{values: [first, second]}), do: {:|, [], [first, second]}
+  def to_spec(%TEnum{values: [head | tail]} = type), do: {:|, [], [head, to_spec(%{type | values: tail})]}
+
   #
   #   PRIVATE
   #

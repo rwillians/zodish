@@ -95,4 +95,13 @@ defimpl Zodish.Type, for: Zodish.Type.Struct do
     with {:ok, parsed} <- Zodish.Type.parse(maptype, value),
          do: {:ok, struct!(type.module, parsed)}
   end
+
+  @impl Zodish.Type
+  def to_spec(%TStruct{module: mod, shape: shape}) do
+    {:%, [],
+     [
+       {:__aliases__, [alias: false], [mod]},
+       {:%{}, [], Enum.map(shape, fn {key, type} -> {key, Zodish.Type.to_spec(type)} end)}
+     ]}
+  end
 end

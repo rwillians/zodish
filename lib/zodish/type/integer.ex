@@ -85,6 +85,16 @@ defimpl Zodish.Type, for: Zodish.Type.Integer do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TInteger{gt: {a, _}, lt: {b, _}}) when is_integer(a) and is_integer(b) and (a + 1) < (b - 1), do: {:.., [], [a + 1, b - 1]}
+  def to_spec(%TInteger{gte: {a, _}, lte: {b, _}}) when is_integer(a) and is_integer(b) and a < b, do: {:.., [], [a, b]}
+  def to_spec(%TInteger{gt: {0, _}}), do: quote(do: pos_integer())
+  def to_spec(%TInteger{gt: {gt, _}}) when is_integer(gt) and gt > -1, do: quote(do: non_neg_integer())
+  def to_spec(%TInteger{gt: {gt, _}}) when is_integer(gt) and gt > 0, do: quote(do: pos_integer())
+  def to_spec(%TInteger{gte: {0, _}}), do: quote(do: non_neg_integer())
+  def to_spec(%TInteger{gte: {gte, _}}) when is_integer(gte) and gte > 0, do: quote(do: pos_integer())
+  def to_spec(%TInteger{}), do: quote(do: integer())
+
   #
   #   PRIVATE
   #

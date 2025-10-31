@@ -16,6 +16,33 @@ defmodule Zodish.Helpers do
   def i(value), do: inspect(value)
 
   @doc ~S"""
+  Infers the type of a value, returning its spec's AST.
+  """
+  @spec infer_type(value :: term()) :: Macro.t()
+
+  def infer_type(value) when is_atom(value), do: value
+  def infer_type(value) when is_binary(value), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
+  def infer_type(value) when is_bitstring(value), do: [{:bitstring, [], []}]
+  def infer_type(value) when is_boolean(value), do: value
+  def infer_type(%Date{}), do: {{:., [], [{:__aliases__, [alias: false], [:Date]}, :t]}, [], []}
+  def infer_type(%DateTime{}), do: {{:., [], [{:__aliases__, [alias: false], [:DateTime]}, :t]}, [], []}
+  def infer_type(%Decimal{}), do: {{:., [], [{:__aliases__, [alias: false], [:Decimal]}, :t]}, [], []}
+  def infer_type(value) when is_float(value), do: {:float, [], []}
+  def infer_type(0), do: {:non_neg_integer, [], []}
+  def infer_type(value) when is_integer(value) and value > 0, do: {:pos_integer, [], []}
+  def infer_type(value) when is_integer(value), do: {:integer, [], []}
+  def infer_type(value) when is_list(value), do: if(keyword?(value), do: {:keyword, [], []}, else: {:list, [], []})
+  def infer_type(%mod{}), do: {:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], []}]}
+  def infer_type(%{__struct__: mod}), do: {:%, [], [{:__aliases__, [alias: false], [mod]}, {:%{}, [], []}]}
+  def infer_type(value) when is_non_struct_map(value), do: {:map, [], []}
+  def infer_type(value) when is_tuple(value), do: {:{}, [], Enum.map(Tuple.to_list(value), &infer_type/1)}
+  def infer_type(value) when is_function(value), do: {:function, [], []}
+  def infer_type(value) when is_pid(value), do: {:pid, [], []}
+  def infer_type(value) when is_port(value), do: {:port, [], []}
+  def infer_type(value) when is_reference(value), do: {:reference, [], []}
+  def infer_type(_), do: {:term, [], []}
+
+  @doc ~S"""
   Pluralizes a given word based on common English rules.
 
       iex> pluralize("is")
@@ -156,10 +183,10 @@ defmodule Zodish.Helpers do
                | reference()
 
   def typeof(nil), do: "nil"
-  def typeof(value) when is_boolean(value), do: "boolean"
   def typeof(value) when is_atom(value), do: "atom"
   def typeof(value) when is_binary(value), do: "string"
   def typeof(value) when is_bitstring(value), do: "bitstring"
+  def typeof(value) when is_boolean(value), do: "boolean"
   def typeof(value) when is_float(value), do: "float"
   def typeof(value) when is_integer(value), do: "integer"
   def typeof(value) when is_list(value), do: if(keyword?(value), do: "keyword", else: "list")

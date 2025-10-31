@@ -32,6 +32,13 @@ defimpl Zodish.Type, for: Zodish.Type.Transform do
          do: {:ok, transform(type.fun, value)}
   end
 
+  @impl Zodish.Type
+  def to_spec(%Transform{}), do: quote(do: term())
+
+  #
+  #   PRIVATE
+  #
+
   defp transform({m, f, a}, value), do: apply(m, f, [value | a])
   defp transform(fun, value) when is_function(fun, 1), do: apply(fun, [value])
 end

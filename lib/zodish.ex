@@ -39,10 +39,14 @@ defmodule Zodish do
   `Zodish.Type.Struct`).
   """
   @type shaped() :: %{
-                      required(:__struct__) => module(),
-                      required(:shape) => %{required(atom()) => Zodish.Type.t()},
-                      optional(atom()) => any()
-                    }
+          required(:__struct__) => module(),
+          required(:shape) => %{required(atom()) => Zodish.Type.t()},
+          optional(atom()) => any()
+        }
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                          PROTOCOL API                           #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   @doc ~S"""
   Parses a value based on the given type.
@@ -81,6 +85,256 @@ defmodule Zodish do
       {:error, issue} -> raise(issue)
     end
   end
+
+  @doc ~S"""
+  Infers the type spec of a given Zodish type to be used with `@type`.
+
+      Z.spec(type)
+
+  ## Examples
+
+  Unquote the returned value of `Z.spec/1` into your `@type` definition,
+  Zodish will pick the most readable way to represent your types:
+
+      @schema Z.map(%{
+                name: Z.string(),
+                email: Z.email()
+              })
+
+      @type t() :: unquote(Z.spec(@schema))
+
+  ### Type `any`
+
+      iex> Z.any() |> Z.to_spec()
+      quote(do: any())
+
+  ### Type `atom`
+
+      iex> Z.atom() |> Z.to_spec()
+      quote(do: atom())
+
+  ### Type `boolean`
+
+      iex> Z.boolean() |> Z.to_spec()
+      quote(do: boolean())
+
+  ### Type `date`
+
+      iex> Z.date() |> Z.to_spec()
+      quote(do: Date.t())
+
+  ### Type `datetime`
+
+      iex> Z.datetime() |> Z.to_spec()
+      quote(do: DateTime.t())
+
+  ### Type `decimal`
+
+      iex> Z.decimal() |> Z.to_spec()
+      quote(do: Decimal.t())
+
+  ### Type `email`
+
+      iex> Z.email() |> Z.to_spec()
+      quote(do: String.t())
+
+  ### Type `enum`
+
+      iex> Z.enum([:foo, :bar, :baz]) |> Z.to_spec()
+      quote(do: :foo | :bar | :baz)
+
+  ### Type `float`
+
+      iex> Z.float() |> Z.to_spec()
+      quote(do: float())
+
+  ### Type `integer`
+
+      iex> Z.integer() |> Z.to_spec()
+      quote(do: integer())
+
+      iex> Z.integer(gt: 0) |> Z.to_spec()
+      quote(do: pos_integer())
+
+      iex> Z.integer(gte: 0) |> Z.to_spec()
+      quote(do: non_neg_integer())
+
+      iex> Z.integer(gt: 0, lt: 10) |> Z.to_spec()
+      {:.., [], [1, 9]}
+
+      iex> Z.integer(gte: 0, lte: 10) |> Z.to_spec()
+      {:.., [], [0, 10]}
+
+  ### Type `list`
+
+      iex> Z.list(Z.integer()) |> Z.to_spec()
+      quote(do: [integer()])
+
+      iex> Z.list(Z.integer()) |> Z.min(1) |> Z.to_spec()
+      quote(do: [integer(), ...])
+
+  ### Type `literal`
+
+      iex> Z.literal(:foo) |> Z.to_spec()
+      :foo
+
+      iex> Z.literal(true) |> Z.to_spec()
+      true
+
+      iex> Z.literal(false) |> Z.to_spec()
+      false
+
+      iex> Z.literal(~D[2025-10-31]) |> Z.to_spec()
+      quote(do: Date.t())
+
+      iex> Z.literal(~U[2025-10-31T00:00:00.000Z]) |> Z.to_spec()
+      quote(do: DateTime.t())
+
+      iex> Z.literal(Decimal.new(0)) |> Z.to_spec()
+      quote(do: Decimal.t())
+
+      iex> Z.literal(3.14) |> Z.to_spec()
+      quote(do: float())
+
+      iex> Z.literal(-1) |> Z.to_spec()
+      quote(do: integer())
+
+      iex> Z.literal(0) |> Z.to_spec()
+      quote(do: non_neg_integer())
+
+      iex> Z.literal(123) |> Z.to_spec()
+      quote(do: pos_integer())
+
+      iex> Z.literal([foo: 1, bar: 2]) |> Z.to_spec()
+      quote(do: keyword())
+
+      iex> Z.literal([1, 2, 3]) |> Z.to_spec()
+      quote(do: list())
+
+      iex> Z.literal(%{foo: :bar}) |> Z.to_spec()
+      quote(do: map())
+
+      iex> Z.literal("foo") |> Z.to_spec()
+      quote(do: String.t())
+
+      iex> Z.literal(%Address{}) |> Z.to_spec()
+      {:%, [], [{:__aliases__, [alias: false], [ZodishTest.Address]}, {:%{}, [], []}]}
+
+      iex> Z.literal(%{__struct__: ZodishTest.Address}) |> Z.to_spec()
+      {:%, [], [{:__aliases__, [alias: false], [ZodishTest.Address]}, {:%{}, [], []}]}
+
+      iex> Z.literal({:ok, :foo, :bar}) |> Z.to_spec()
+      quote(do: {:ok, :foo, :bar})
+
+      iex> Z.literal("http://localhost:3000/") |> Z.to_spec()
+      quote(do: String.t())
+
+      iex> Z.literal("4c5995ef-1bd6-43a7-86a6-e721a3e2d99a") |> Z.to_spec()
+      quote(do: String.t())
+
+  ### Type `map`
+
+      iex> Z.map(%{
+      iex>   foo: Z.string(),
+      iex>   bar: Z.integer()
+      iex> })
+      iex> |> Z.to_spec()
+      quote(do: %{foo: String.t(), bar: integer()})
+
+      iex> Z.map(%{
+      iex>   foo: Z.string(),
+      iex>   bar: Z.optional(Z.integer())
+      iex> })
+      iex> |> Z.to_spec()
+      quote(do: %{foo: String.t(), bar: integer() | nil})
+
+      iex> Z.map(%{
+      iex>   foo: Z.string(),
+      iex>   bar: Z.optional(Z.integer(), default: 10)
+      iex> })
+      iex> |> Z.to_spec()
+      quote(do: %{foo: String.t(), bar: integer()})
+
+  ### Type `number`
+
+      iex> Z.number() |> Z.to_spec()
+      quote(do: number())
+
+  ### Type `numeric`
+
+      iex> Z.numeric() |> Z.to_spec()
+      quote(do: String.t())
+
+  ### Type `optional`
+
+      iex> Z.string() |> Z.optional() |> Z.to_spec()
+      quote(do: String.t() | nil)
+
+      iex> Z.string() |> Z.optional(default: "foo") |> Z.to_spec()
+      quote(do: String.t())
+
+  ### Type `record`
+
+      iex> Z.record(keys: Z.string(), values: Z.integer()) |> Z.to_spec()
+      {:%{}, [], [{{:optional, [], [quote(do: String.t())]}, quote(do: integer())}]}
+
+  ### Type `refine`
+
+      iex> Z.integer()
+      iex> |> Z.refine(&(&1 > 0), error: "must be positive")
+      iex> |> Z.to_spec()
+      quote(do: integer())
+
+      iex> Z.string()
+      iex> |> Z.refine(&String.starts_with?(&1, "A"), error: "must start with A")
+      iex> |> Z.to_spec()
+      quote(do: String.t())
+
+  ### Type `string`
+
+      iex> Z.string() |> Z.to_spec()
+      {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
+
+  ### Type `struct`
+
+      iex> Z.struct(Address, %{
+      iex>   line_1: Z.string(min: 1, max: 100),
+      iex>   line_2: Z.optional(Z.string(min: 1, max: 100)),
+      iex> })
+      iex> |> Z.to_spec()
+      {:%, [], [{:__aliases__, [alias: false], [ZodishTest.Address]}, {:%{}, [], [line_1: quote(do: String.t()), line_2: quote(do: String.t() | nil)]}]}
+
+  ### Type `tuple`
+
+      iex> Z.tuple([Z.literal(:error), Z.string(min: 1)])
+      iex> |> Z.to_spec()
+      {:{}, [], [:error, {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}]}
+
+  ### Type `union`
+
+      iex> Z.union([Z.literal(:ok), Z.literal(:error)])
+      iex> |> Z.to_spec()
+      {:|, [], [:ok, :error]}
+
+  ### Type `uri`
+
+      iex> Z.uri() |> Z.to_spec()
+      {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
+
+  ### Type `uuid`
+
+      iex> Z.uuid() |> Z.to_spec()
+      {:<<>>, [], [{:"::", [], [{:_, [], Elixir}, 288]}]}
+
+  """
+  @spec to_spec(type) :: Macro.t()
+        when type: Zodish.Type.t()
+
+  defdelegate to_spec(type), to: Zodish.Type
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  #                            TYPES API                            #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   @doc ~S"""
   Defines a type that accepts any value.
@@ -880,7 +1134,7 @@ defmodule Zodish do
 
       iex> Z.numeric()
       iex> |> Z.parse("a1b2c3")
-      {:error, %Zodish.Issue{message: "must contain numbers only"}}
+      {:error, %Zodish.Issue{message: "must contain 0-9 digits only"}}
 
   You can constrain the number of digits by using the `:length`,
   `:min` and `:max` options:
@@ -1385,8 +1639,8 @@ defmodule Zodish do
         zip: "62701"
       }}
 
-  If your Zodish schema includes a key that doesn't exist in the
-  struct, then an `ArgumentError` will be raised.
+  If your Zodish type includes a key that doesn't exist in the struct,
+  then an `ArgumentError` will be raised.
 
       iex> Z.struct(Address, %{name: Z.string()})
       ** (ArgumentError) The shape key :name doesn't exist in struct ZodishTest.Address

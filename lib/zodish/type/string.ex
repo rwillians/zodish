@@ -144,6 +144,9 @@ defimpl Zodish.Type, for: Zodish.Type.String do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TString{}), do: quote(do: String.t())
+
   #
   #   PRIVATE
   #

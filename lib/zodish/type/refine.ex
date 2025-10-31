@@ -44,6 +44,9 @@ defimpl Zodish.Type, for: Zodish.Type.Refine do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%Refine{} = type), do: Zodish.Type.to_spec(type.inner_type)
+
   #
   #   PRIVATE
   #

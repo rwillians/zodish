@@ -70,6 +70,11 @@ defimpl Zodish.Type, for: Zodish.Type.List do
          do: parse_items(type, value)
   end
 
+  @impl Zodish.Type
+  def to_spec(%TList{length: {n, _}} = type) when n > 0, do: [Zodish.Type.to_spec(type.inner_type), {:..., [], []}]
+  def to_spec(%TList{min: {n, _}} = type) when n > 0, do: [Zodish.Type.to_spec(type.inner_type), {:..., [], []}]
+  def to_spec(%TList{} = type), do: [Zodish.Type.to_spec(type.inner_type)]
+
   #
   #   PRIVATE
   #

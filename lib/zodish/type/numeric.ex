@@ -59,12 +59,15 @@ defimpl Zodish.Type, for: Zodish.Type.Numeric do
   def parse(%TNumeric{} = type, value) do
     with :ok <- validate_required(value),
          :ok <- validate_type(value),
-         :ok <- validate_numbers_only(value),
+         :ok <- validate_numeric(value),
          :ok <- validate_length(type, value),
          :ok <- validate_min(type, value),
          :ok <- validate_max(type, value),
          do: {:ok, value}
   end
+
+  @impl Zodish.Type
+  def to_spec(%TNumeric{}), do: quote(do: String.t())
 
   #
   #   PRIVATE
@@ -74,12 +77,15 @@ defimpl Zodish.Type, for: Zodish.Type.Numeric do
   defp validate_required(_), do: :ok
 
   defp validate_type(<<_::binary>>), do: :ok
-  defp validate_type(value), do: {:error, issue("expected a string, got #{typeof(value)}")}
+  defp validate_type(value), do: {:error, issue("expected a numeric string, got #{typeof(value)}")}
 
-  defp validate_numbers_only(value) do
-    case String.match?(value, ~r/^[0-9]+$/) do
+  @compile {:inline, regex: 1}
+  defp regex(:base10), do: ~r/^[0-9]+$/
+
+  defp validate_numeric(value) do
+    case String.match?(value, regex(:base10)) do
       true -> :ok
-      false -> {:error, issue("must contain numbers only")}
+      false -> {:error, issue("must contain 0-9 digits only")}
     end
   end
 

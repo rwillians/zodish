@@ -47,6 +47,14 @@ defimpl Zodish.Type, for: Zodish.Type.Record do
          do: parse_value(schema, value)
   end
 
+  @impl Zodish.Type
+  def to_spec(%TRecord{} = type) do
+    key_spec = Zodish.Type.to_spec(type.keys_schema)
+    value_spec = Zodish.Type.to_spec(type.values_schema)
+
+    {:%{}, [], [{{:optional, [], [key_spec]}, value_spec}]}
+  end
+
   #
   #   PRIVATE
   #

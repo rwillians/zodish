@@ -109,6 +109,9 @@ defimpl Zodish.Type, for: Zodish.Type.Decimal do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TDecimal{}), do: quote(do: Decimal.t())
+
   #
   #   PRIVATE
   #

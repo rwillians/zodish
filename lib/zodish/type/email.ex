@@ -47,6 +47,9 @@ defimpl Zodish.Type, for: Zodish.Type.Email do
     |> Zodish.Type.parse(value)
   end
 
+  @impl Zodish.Type
+  def to_spec(%TEmail{}), do: quote(do: String.t())
+
   #
   #   PRIVATE
   #

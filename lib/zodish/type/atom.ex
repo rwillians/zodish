@@ -44,6 +44,9 @@ defimpl Zodish.Type, for: Zodish.Type.Atom do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TAtom{}), do: quote(do: atom())
+
   #
   #   PRIVATE
   #

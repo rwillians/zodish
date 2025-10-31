@@ -85,6 +85,9 @@ defimpl Zodish.Type, for: Zodish.Type.Float do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TFloat{}), do: quote(do: float())
+
   #
   #   PRIVATE
   #

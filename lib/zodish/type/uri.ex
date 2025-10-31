@@ -42,6 +42,9 @@ defimpl Zodish.Type, for: Zodish.Type.URI do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TUri{}), do: quote(do: String.t())
+
   #
   #   PRIVATE
   #

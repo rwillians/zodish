@@ -1,14 +1,21 @@
 defprotocol Zodish.Type do
   @moduledoc ~S"""
-  Protocol for parsing values based on Zodish schemas.
+  Protocol for parsing values based on Zodish types.
   """
 
   @doc ~S"""
-  Parses a value based on the given Zodish schema.
+  Parses a value based on the given Zodish type.
   """
-  @spec parse(schema :: t(), value :: any()) ::
+  @spec parse(type :: t(), value :: any()) ::
           {:ok, any()}
           | {:error, Zodish.Issue.t()}
 
-  def parse(schema, value)
+  def parse(type, value)
+
+  @doc ~S"""
+  Builds the type spec for a given Zodish type.
+  """
+  @spec to_spec(type :: t()) :: Macro.t()
+
+  def to_spec(type)
 end

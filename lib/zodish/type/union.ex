@@ -39,4 +39,15 @@ defimpl Zodish.Type, for: Zodish.Type.Union do
       %Issue{} = issue -> {:error, issue}
     end
   end
+
+  @impl Zodish.Type
+  def to_spec(%TUnion{} = type), do: do_to_spec(type.inner_types)
+
+  #
+  #   PRIVATE
+  #
+
+  defp do_to_spec([head]), do: Zodish.Type.to_spec(head)
+  defp do_to_spec([first, second]), do: {:|, [], [Zodish.Type.to_spec(first), Zodish.Type.to_spec(second)]}
+  defp do_to_spec([head | tail]), do: {:|, [], [Zodish.Type.to_spec(head), do_to_spec(tail)]}
 end

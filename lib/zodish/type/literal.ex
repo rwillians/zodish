@@ -20,6 +20,7 @@ defmodule Zodish.Type.Literal do
 end
 
 defimpl Zodish.Type, for: Zodish.Type.Literal do
+  import Zodish.Helpers, only: [infer_type: 1]
   import Zodish.Issue, only: [issue: 1]
 
   alias Zodish.Type.Literal, as: TLiteral
@@ -28,4 +29,7 @@ defimpl Zodish.Type, for: Zodish.Type.Literal do
   def parse(%TLiteral{}, nil), do: {:error, issue("is required")}
   def parse(%TLiteral{value: same}, same), do: {:ok, same}
   def parse(%TLiteral{value: expected}, actual), do: {:error, issue("expected to be exactly #{inspect(expected)}, got #{inspect(actual)}")}
+
+  @impl Zodish.Type
+  def to_spec(%TLiteral{} = type), do: infer_type(type.value)
 end

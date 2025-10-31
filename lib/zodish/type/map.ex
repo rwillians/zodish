@@ -69,6 +69,9 @@ defimpl Zodish.Type, for: Zodish.Type.Map do
          do: parse_value(schema, value)
   end
 
+  @impl Zodish.Type
+  def to_spec(%TMap{shape: shape}), do: {:%{}, [], Enum.map(shape, fn {key, type} -> {key, Zodish.Type.to_spec(type)} end)}
+
   #
   #   PRIVATE
   #

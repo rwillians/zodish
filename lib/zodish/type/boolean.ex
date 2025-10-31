@@ -43,6 +43,9 @@ defimpl Zodish.Type, for: Zodish.Type.Boolean do
          do: {:ok, value}
   end
 
+  @impl Zodish.Type
+  def to_spec(%TBoolean{}), do: quote(do: boolean())
+
   #
   #   PRIVATE
   #
