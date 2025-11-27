@@ -182,7 +182,7 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Returns a flat map of fields to their respective error messages.
 
-      iex> to_messages_by_field(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex> to_errors_by_field(%Zodish.Issue{message: "One or more items failed validation", issues: [
       iex>   %Zodish.Issue{
       iex>     path: ["0"],
       iex>     message: "One or more fields failed validation",
@@ -202,13 +202,13 @@ defmodule Zodish.Issue do
       }
 
   """
-  @spec to_messages_by_field(t) :: %{
+  @spec to_errors_by_field(t) :: %{
           String.t() => [String.t()]
         }
 
-  def to_messages_by_field(%Issue{issues: []} = issue), do: %{dn(issue.path) => [issue.message]}
+  def to_errors_by_field(%Issue{issues: []} = issue), do: %{dn(issue.path) => [issue.message]}
 
-  def to_messages_by_field(%Issue{issues: [_ | _]} = issue) do
+  def to_errors_by_field(%Issue{issues: [_ | _]} = issue) do
     issue
     |> flatten()
     |> get(:issues, [])
@@ -246,7 +246,7 @@ defmodule Zodish.Issue do
 
   def to_summary(%Zodish.Issue{} = issue) do
     issue
-    |> to_messages_by_field()
+    |> to_errors_by_field()
     |> flat_map(fn {key, msgx} -> map(msgx, &{key, &1}) end)
     |> map(fn {key, msg} -> "- `#{key}`: #{msg}" end)
     |> join("\n")
