@@ -3,8 +3,8 @@ defmodule Zodish.Issue do
   Represents an issue while parsing a value.
   """
 
-  import Enum, only: [map: 2, reduce: 3, sum: 1]
-  import Map, only: [from_struct: 1, values: 1]
+  import Enum, only: [map: 2, map_join: 3, reduce: 3, sum: 1]
+  import Map, only: [from_struct: 1, get: 3, put: 3, values: 1]
   import Zodish.Helpers, only: [pluralize: 2]
 
   alias __MODULE__, as: Issue
@@ -12,7 +12,7 @@ defmodule Zodish.Issue do
   @type segment() :: atom() | non_neg_integer() | String.t()
 
   @type t() :: %Issue{
-          path: [String.t()],
+          path: [segment()],
           message: String.t(),
           issues: [t()],
           parse_score: non_neg_integer()
@@ -178,4 +178,47 @@ defmodule Zodish.Issue do
   defp parse_score([_ | _] = value, acc), do: acc + 1 + sum(map(value, &parse_score/1))
   defp parse_score(%_{} = value, acc), do: acc + 1 + sum(map(values(from_struct(value)), &parse_score/1))
   defp parse_score(%{} = value, acc), do: acc + 1 + sum(map(values(value), &parse_score/1))
+
+  @doc ~S"""
+  Returns a flat map of fields to their respective error messages.
+
+      iex> to_errors_by_field(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex>   %Zodish.Issue{
+      iex>     path: ["0"],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: ["email"], message: "Is required"}],
+      iex>     parse_score: 1
+      iex>   },
+      iex>   %Zodish.Issue{
+      iex>     path: ["1"],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: ["name"], message: "Is required"}],
+      iex>     parse_score: 1,
+      iex>   }
+      iex> ]})
+      %{
+        "0.email" => ["Is required"],
+        "1.name" => ["Is required"]
+      }
+
+  """
+  @spec to_errors_by_field(t) :: %{
+          String.t() => [String.t()]
+        }
+
+  def to_errors_by_field(%Issue{issues: []} = issue), do: %{dn(issue.path) => [issue.message]}
+
+  def to_errors_by_field(%Issue{issues: [_ | _]} = issue) do
+    issue
+    |> flatten()
+    |> get(:issues, [])
+    |> reduce(%{}, fn issue, acc ->
+      field = dn(issue.path)
+      messages = get(acc, field, []) ++ [issue.message]
+      put(acc, field, messages)
+    end)
+  end
+
+  defp dn(path), do: map_join(path, ".", &to_string/1)
+  #    ↑ [d]ot-[n]otation
 end
