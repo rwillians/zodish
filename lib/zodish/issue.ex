@@ -3,7 +3,7 @@ defmodule Zodish.Issue do
   Represents an issue while parsing a value.
   """
 
-  import Enum, only: [map: 2, map_join: 3, reduce: 3, sum: 1]
+  import Enum, only: [flat_map: 2, join: 2, map: 2, map_join: 3, reduce: 3, sum: 1]
   import Map, only: [from_struct: 1, get: 3, put: 3, values: 1]
   import Zodish.Helpers, only: [pluralize: 2]
 
@@ -182,7 +182,7 @@ defmodule Zodish.Issue do
   @doc ~S"""
   Returns a flat map of fields to their respective error messages.
 
-      iex> to_errors_by_field(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex> to_messages_by_field(%Zodish.Issue{message: "One or more items failed validation", issues: [
       iex>   %Zodish.Issue{
       iex>     path: ["0"],
       iex>     message: "One or more fields failed validation",
@@ -202,13 +202,13 @@ defmodule Zodish.Issue do
       }
 
   """
-  @spec to_errors_by_field(t) :: %{
+  @spec to_messages_by_field(t) :: %{
           String.t() => [String.t()]
         }
 
-  def to_errors_by_field(%Issue{issues: []} = issue), do: %{dn(issue.path) => [issue.message]}
+  def to_messages_by_field(%Issue{issues: []} = issue), do: %{dn(issue.path) => [issue.message]}
 
-  def to_errors_by_field(%Issue{issues: [_ | _]} = issue) do
+  def to_messages_by_field(%Issue{issues: [_ | _]} = issue) do
     issue
     |> flatten()
     |> get(:issues, [])
@@ -221,4 +221,34 @@ defmodule Zodish.Issue do
 
   defp dn(path), do: map_join(path, ".", &to_string/1)
   #    ↑ [d]ot-[n]otation
+
+  @doc ~S"""
+  Transforms the given issue into a human-readable string.
+
+      iex> to_summary(%Zodish.Issue{message: "One or more items failed validation", issues: [
+      iex>   %Zodish.Issue{
+      iex>     path: ["0"],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: ["email"], message: "Is required"}],
+      iex>     parse_score: 1
+      iex>   },
+      iex>   %Zodish.Issue{
+      iex>     path: ["1"],
+      iex>     message: "One or more fields failed validation",
+      iex>     issues: [%Zodish.Issue{path: ["name"], message: "Is required"}],
+      iex>     parse_score: 1,
+      iex>   }
+      iex> ]})
+      "One or more fields failed validation:\n- `0.email`: Is required\n- `1.name`: Is required"
+
+  """
+  @spec to_summary(t) :: String.t()
+
+  def to_summary(%Zodish.Issue{} = issue) do
+    issue
+    |> to_messages_by_field()
+    |> flat_map(fn {key, msgx} -> map(msgx, &{key, &1}) end)
+    |> map(fn {key, msg} -> "- `#{key}`: #{msg}" end)
+    |> join("\n")
+  end
 end
