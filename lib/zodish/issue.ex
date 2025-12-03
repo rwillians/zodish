@@ -5,7 +5,7 @@ defmodule Zodish.Issue do
 
   import Enum, only: [flat_map: 2, join: 2, map: 2, map_join: 3, reduce: 3, sum: 1]
   import Map, only: [from_struct: 1, get: 3, put: 3, values: 1]
-  import Zodish.Helpers, only: [pluralize: 2]
+  import Zodish.Helpers, only: [human_readable_list: 2, pluralize: 2]
 
   alias __MODULE__, as: Issue
 
@@ -41,7 +41,7 @@ defmodule Zodish.Issue do
   message for their value in the given context map.
 
       iex> issue("The value of {{key}} is invalid", %{key: "foo"})
-      %Zodish.Issue{message: "The value of foo is invalid"}
+      %Zodish.Issue{message: "The value of 'foo' is invalid"}
 
   You can also use pluralization slots that can automatically
   pluralize words based on a numeric context variable:
@@ -64,9 +64,18 @@ defmodule Zodish.Issue do
 
   defp replace_variables(str, ctx) do
     reduce(ctx, str, fn {key, value}, acc ->
-      String.replace(acc, "{{#{key}}}", to_string(value))
+      String.replace(acc, "{{#{key}}}", format(value))
     end)
   end
+
+  defp format(%Date{} = value), do: Date.to_iso8601(value)
+  defp format(%DateTime{} = value), do: DateTime.to_iso8601(value)
+  defp format(%Regex{} = value), do: "/#{value.source}/"
+  defp format(%Decimal{} = value), do: Decimal.to_string(value)
+  defp format({:list, value, conj}), do: human_readable_list(Enum.map(value, &format/1), conjunction: conj)
+  defp format(value) when is_binary(value), do: "'#{value}'"
+  defp format(value) when is_boolean(value), do: to_string(value)
+  defp format(value), do: inspect(value)
 
   @slot ~r/\{\{([^\s\|]+)\s?\|\s?([^\}]+)\}\}/
   defp replace_pluralize_slots(str, ctx) do
@@ -239,16 +248,16 @@ defmodule Zodish.Issue do
       iex>     parse_score: 1,
       iex>   }
       iex> ]})
-      "One or more fields failed validation:\n- `0.email`: Is required\n- `1.name`: Is required"
+      "One or more items failed validation:\n- `0.email`: Is required\n- `1.name`: Is required"
 
   """
   @spec to_summary(t) :: String.t()
 
   def to_summary(%Zodish.Issue{} = issue) do
-    issue
+    issue.message <> ":\n" <> (issue
     |> to_errors_by_field()
     |> flat_map(fn {key, msgx} -> map(msgx, &{key, &1}) end)
     |> map(fn {key, msg} -> "- `#{key}`: #{msg}" end)
-    |> join("\n")
+    |> join("\n"))
   end
 end

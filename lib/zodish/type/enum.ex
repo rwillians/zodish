@@ -54,7 +54,7 @@ end
 
 defimpl Zodish.Type, for: Zodish.Type.Enum do
   import Zodish.Helpers, only: [typeof: 1]
-  import Zodish.Issue, only: [issue: 1]
+  import Zodish.Issue, only: [issue: 1, issue: 2]
 
   alias Zodish.Type.Enum, as: TEnum
 
@@ -96,8 +96,10 @@ defimpl Zodish.Type, for: Zodish.Type.Enum do
   defp validate_type(value), do: {:error, issue("expected an atom, got #{typeof(value)}")}
 
   defp validate_inclusion(type, value) do
+    opts = %{expected: {:list, type.values, :or}, actual: value}
+
     if value in type.values,
       do: :ok,
-      else: {:error, issue("is invalid")}
+      else: {:error, issue("expected one of {{expected}}, got {{actual}}", opts)}
   end
 end

@@ -106,17 +106,17 @@ defmodule Zodish.Type.String do
       when is_integer(value) and value >= 0,
       do: %{type | max: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected string to start with \"{{prefix}}\", got \"{{value}}\""]
+  @opts [error: "expected string to start with {{prefix}}, got {{value}}"]
   def starts_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | starts_with: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected string to end with \"{{suffix}}\", got \"{{value}}\""]
+  @opts [error: "expected string to end with {{suffix}}, got {{value}}"]
   def ends_with(%TString{} = type, value, opts \\ [])
       when is_binary(value),
       do: %{type | ends_with: {value, merge_opts(@opts, opts)}}
 
-  @opts [error: "expected string to match {{pattern}}, got \"{{value}}\""]
+  @opts [error: "expected string to match {{pattern}}, got {{value}}"]
   def regex(%TString{} = type, %Regex{} = value, opts \\ []),
     do: %{type | regex: {value, merge_opts(@opts, opts)}}
 end
@@ -222,11 +222,9 @@ defimpl Zodish.Type, for: Zodish.Type.String do
 
   defp validate_regex(%{regex: nil}, _), do: :ok
   defp validate_regex(%{regex: {regex, opts}}, value) do
-    pattern = String.replace(inspect(regex), ~r/^~r/, "")
-
     case Regex.match?(regex, value) do
       true -> :ok
-      false -> {:error, issue(opts.error, %{pattern: pattern, value: value})}
+      false -> {:error, issue(opts.error, %{pattern: regex, value: value})}
     end
   end
 end

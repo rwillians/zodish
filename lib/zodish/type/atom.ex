@@ -32,7 +32,7 @@ end
 
 defimpl Zodish.Type, for: Zodish.Type.Atom do
   import Zodish.Helpers, only: [typeof: 1]
-  import Zodish.Issue, only: [issue: 1]
+  import Zodish.Issue, only: [issue: 1, issue: 2]
 
   alias Zodish.Type.Atom, as: TAtom
 
@@ -57,7 +57,7 @@ defimpl Zodish.Type, for: Zodish.Type.Atom do
   defp coerce(%{coerce: true}, <<_, _::binary>> = value) do
     {:ok, String.to_existing_atom(value)}
   rescue
-    _ -> {:error, issue("cannot coerce string #{inspect(value)} into an existing atom")}
+    _ -> {:error, issue("cannot coerce string {{actual}} into an existing atom", %{actual: value})}
   end
   defp coerce(%{coerce: :unsafe}, <<_, _::binary>> = value) do
     {:ok, String.to_existing_atom(value)}

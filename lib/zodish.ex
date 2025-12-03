@@ -380,7 +380,7 @@ defmodule Zodish do
 
       iex> Z.atom(coerce: true)
       iex> |> Z.parse("alksdhfwejh")
-      {:error, %Zodish.Issue{message: "cannot coerce string \"alksdhfwejh\" into an existing atom"}}
+      {:error, %Zodish.Issue{message: "cannot coerce string 'alksdhfwejh' into an existing atom"}}
 
   If you want to allow unsafe coercion of any string into an atom, you
   can set `:coerce` to `:unsafe`.
@@ -522,7 +522,7 @@ defmodule Zodish do
 
       iex> Z.datetime(after: ~U[2030-01-01T00:00:00.000Z])
       iex> |> Z.parse(~U[2025-06-27T12:00:00.000Z])
-      {:error, %Zodish.Issue{message: "must be after 2030-01-01 00:00:00.000Z"}}
+      {:error, %Zodish.Issue{message: "must be after 2030-01-01T00:00:00.000Z"}}
 
   Alternatively you can provide an MFA tuple or a function that
   returns a `DateTime`:
@@ -704,7 +704,7 @@ defmodule Zodish do
 
       iex> Z.enum(coerce: true, values: [:foo, :bar])
       iex> |> Z.parse("baz")
-      {:error, %Zodish.Issue{message: "is invalid"}}
+      {:error, %Zodish.Issue{message: "expected one of :foo or :bar, got :baz"}}
 
   """
   @spec enum(values :: [atom(), ...]) :: TEnum.t()
@@ -1537,18 +1537,18 @@ defmodule Zodish do
 
       iex> Z.string(starts_with: "sk_")
       iex> |> Z.parse("pk_123")
-      {:error, %Zodish.Issue{message: "expected string to start with \"sk_\", got \"pk_123\""}}
+      {:error, %Zodish.Issue{message: "expected string to start with 'sk_', got 'pk_123'"}}
 
       iex> Z.string(ends_with: "bar")
       iex> |> Z.parse("fizzbuzz")
-      {:error, %Zodish.Issue{message: "expected string to end with \"bar\", got \"fizzbuzz\""}}
+      {:error, %Zodish.Issue{message: "expected string to end with 'bar', got 'fizzbuzz'"}}
 
   You can use `:regex` to validate the string against a regular
   expression.
 
       iex> Z.string(regex: ~r/^\d+$/)
       iex> |> Z.parse("123abc")
-      {:error, %Zodish.Issue{message: "expected string to match /^\\d+$/, got \"123abc\""}}
+      {:error, %Zodish.Issue{message: "expected string to match /^\\d+$/, got '123abc'"}}
 
   You can use `:coerce` to cast the given value into a string before
   validation.
