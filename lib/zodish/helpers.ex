@@ -15,9 +15,10 @@ defmodule Zodish.Helpers do
         when value: String.t() | String.Chars.t(),
              option: {:conjunction, :and | :or}
 
-  def human_readable_list([head]), do: "#{head}"
+  def human_readable_list(list, opts \\ [])
+  def human_readable_list([head], _), do: "#{head}"
 
-  def human_readable_list([_, _ | _] = list, opts \\ []) do
+  def human_readable_list([_, _ | _] = list, opts) do
     conjunction =
       case Keyword.get(opts, :conjunction, :and) do
         :and -> "and"
